@@ -1,0 +1,34 @@
+use super::*;
+impl EmberMug {
+    /// Retrieve the current unit of temperature used by the mug.
+    pub async fn get_temperature_unit(&self) -> Result<TemperatureUnit, ReadError> {
+        TemperatureUnit::read(&mut Cursor::new(self.read(&TEMPERATURE_UNIT).await?))
+            .map_err(Into::into)
+    }
+    /// Set the current unit of temperature used by the mug.
+    pub async fn set_temperature_unit(
+        &self,
+        temperature_unit: &TemperatureUnit,
+    ) -> Result<(), WriteError> {
+        self.command(&TEMPERATURE_UNIT, temperature_unit).await
+    }
+}
+
+#[derive(BinRead, BinWrite, Debug)]
+#[br(repr = u8)]
+#[bw(repr = u8)]
+#[br(little)]
+#[bw(little)]
+pub enum TemperatureUnit {
+    Celsius = 0,
+    Fahrenheit = 1,
+}
+
+impl std::fmt::Display for TemperatureUnit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TemperatureUnit::Celsius => f.write_str("C"),
+            TemperatureUnit::Fahrenheit => f.write_str("F"),
+        }
+    }
+}

@@ -1,0 +1,25 @@
+[package]
+name = "ember-mug"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+binrw = "0.10.0"
+btleplug = "0.10.4"
+futures = "0.3.25"
+thiserror = "1.0.38"
+tokio = { version = "1.23.0", default-features = false, features = ["time"] }
+tracing = "0.1.37"
+uuid = "1.2.2"
+
+[dev-dependencies]
+color-eyre = "0.6.2"
+tokio = { version = "1.23.0", features = ["macros"] }
+tracing-subscriber = "0.3.16"
+
+[workspace]
+
+[workspace.dependencies]
+ember_mug = { path = "." }
