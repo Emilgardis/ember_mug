@@ -3,6 +3,7 @@ mod btle;
 mod battery;
 mod current_temp;
 mod dsk;
+mod last_location;
 mod liquid_level;
 mod liquid_state;
 mod mug_color;
@@ -36,7 +37,7 @@ use std::io::Cursor;
 pub static EMBER_ASSIGNED_NUMBER: u16 = 0x03C1;
 
 #[rustfmt::skip]
-mod statics {
+mod characteristics {
     use uuid::uuid;
 
     pub const EMBER_MUG_SERVICE_UUID: uuid::Uuid = uuid!("fc543622-236c-4c94-8fa9-944a3e5353fa");
@@ -54,12 +55,112 @@ mod statics {
     pub static MUG_COLOR: uuid::Uuid        = uuid!("fc540014-236c-4c94-8fa9-944a3e5353fa");
 
     // extras
+    pub static LAST_LOCATION: uuid::Uuid    = uuid!("fc54000a-236c-4c94-8fa9-944a3e5353fa");
     pub static MUG_ID: uuid::Uuid           = uuid!("fc54000d-236c-4c94-8fa9-944a3e5353fa");
     pub static DSK: uuid::Uuid              = uuid!("fc54000e-236c-4c94-8fa9-944a3e5353fa");
     pub static UDSK: uuid::Uuid             = uuid!("fc54000f-236c-4c94-8fa9-944a3e5353fa");
+
+    // unknown
+    pub static CONTROL_REGISTER_ADDRESS: uuid::Uuid = uuid!("fc540010-236c-4c94-8fa9-944a3e5353fa");
+    pub static CONTROL_REGISTER_DATA: uuid::Uuid     = uuid!("fc540011-236c-4c94-8fa9-944a3e5353fa");
+    pub static STATISTICS: uuid::Uuid     = uuid!("fc540013-236c-4c94-8fa9-944a3e5353fa");
 }
 
-use statics::*;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum KnownCharacteristic {
+    Name,
+    CurrentTemp,
+    TargetTemp,
+    TemperatureUnit,
+    LiquidLevel,
+    TimeDateZone,
+    Battery,
+    LiquidState,
+    Ota,
+    PushEvents,
+    MugColor,
+    LastLocation,
+    MugId,
+    Dsk,
+    Udsk,
+    ControlRegisterAddress,
+    ControlRegisterData,
+    Statistics,
+}
+
+impl KnownCharacteristic {
+    pub fn get(&self) -> &uuid::Uuid {
+        match self {
+            KnownCharacteristic::Name => &NAME,
+            KnownCharacteristic::CurrentTemp => &CURRENT_TEMP,
+            KnownCharacteristic::TargetTemp => &TARGET_TEMP,
+            KnownCharacteristic::TemperatureUnit => &TEMPERATURE_UNIT,
+            KnownCharacteristic::LiquidLevel => &LIQUID_LEVEL,
+            KnownCharacteristic::TimeDateZone => &TIME_DATE_ZONE,
+            KnownCharacteristic::Battery => &BATTERY,
+            KnownCharacteristic::LiquidState => &LIQUID_STATE,
+            KnownCharacteristic::Ota => &OTA,
+            KnownCharacteristic::PushEvents => &PUSH_EVENTS,
+            KnownCharacteristic::MugColor => &MUG_COLOR,
+            KnownCharacteristic::LastLocation => &LAST_LOCATION,
+            KnownCharacteristic::MugId => &MUG_ID,
+            KnownCharacteristic::Dsk => &DSK,
+            KnownCharacteristic::Udsk => &UDSK,
+            KnownCharacteristic::ControlRegisterAddress => &CONTROL_REGISTER_ADDRESS,
+            KnownCharacteristic::ControlRegisterData => &CONTROL_REGISTER_DATA,
+            KnownCharacteristic::Statistics => &STATISTICS,
+        }
+    }
+
+    pub fn new(uuid: &uuid::Uuid) -> Option<Self> {
+        Some(match uuid {
+            id if id == &NAME => KnownCharacteristic::Name,
+            id if id == &CURRENT_TEMP => KnownCharacteristic::CurrentTemp,
+            id if id == &TARGET_TEMP => KnownCharacteristic::TargetTemp,
+            id if id == &TEMPERATURE_UNIT => KnownCharacteristic::TemperatureUnit,
+            id if id == &LIQUID_LEVEL => KnownCharacteristic::LiquidLevel,
+            id if id == &TIME_DATE_ZONE => KnownCharacteristic::TimeDateZone,
+            id if id == &BATTERY => KnownCharacteristic::Battery,
+            id if id == &LIQUID_STATE => KnownCharacteristic::LiquidState,
+            id if id == &OTA => KnownCharacteristic::Ota,
+            id if id == &PUSH_EVENTS => KnownCharacteristic::PushEvents,
+            id if id == &MUG_COLOR => KnownCharacteristic::MugColor,
+            id if id == &LAST_LOCATION => KnownCharacteristic::LastLocation,
+            id if id == &MUG_ID => KnownCharacteristic::MugId,
+            id if id == &DSK => KnownCharacteristic::Dsk,
+            id if id == &UDSK => KnownCharacteristic::Udsk,
+            id if id == &CONTROL_REGISTER_ADDRESS => KnownCharacteristic::ControlRegisterAddress,
+            id if id == &CONTROL_REGISTER_DATA => KnownCharacteristic::ControlRegisterData,
+            id if id == &STATISTICS => KnownCharacteristic::Statistics,
+            _ => return None,
+        })
+    }
+
+    pub fn all() -> &'static [Self] {
+        &[
+            KnownCharacteristic::Name,
+            KnownCharacteristic::CurrentTemp,
+            KnownCharacteristic::TargetTemp,
+            KnownCharacteristic::TemperatureUnit,
+            KnownCharacteristic::LiquidLevel,
+            KnownCharacteristic::TimeDateZone,
+            KnownCharacteristic::Battery,
+            KnownCharacteristic::LiquidState,
+            KnownCharacteristic::Ota,
+            KnownCharacteristic::PushEvents,
+            KnownCharacteristic::MugColor,
+            KnownCharacteristic::LastLocation,
+            KnownCharacteristic::MugId,
+            KnownCharacteristic::Dsk,
+            KnownCharacteristic::Udsk,
+            KnownCharacteristic::ControlRegisterAddress,
+            KnownCharacteristic::ControlRegisterData,
+            KnownCharacteristic::Statistics,
+        ]
+    }
+}
+
+use characteristics::*;
 
 pub struct EmberMug {
     peripheral: Peripheral,
@@ -130,6 +231,10 @@ impl EmberMug {
 impl EmberMug {
     pub fn get_characteristic(&self, uuid: &uuid::Uuid) -> Option<&Characteristic> {
         self.get_characteristic_on_service(uuid, &EMBER_MUG_SERVICE_UUID)
+    }
+
+    pub fn get_characteristics(&self) -> impl Iterator<Item = &Characteristic> {
+        self.characteristics.iter()
     }
 
     pub fn get_characteristic_on_service(
