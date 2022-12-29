@@ -11,6 +11,12 @@ pub async fn search_adapter_for_ember(
     adapter: &platform::Adapter,
     mac: Option<BDAddr>,
 ) -> Result<Vec<crate::Peripheral>, btleplug::Error> {
+    use futures::FutureExt;
+    let adapter_info = adapter.adapter_info().boxed().await?;
+    tracing::debug!(
+        adapter.adapter_info = ?adapter_info,
+        "discovering mugs on adapter"
+    );
     adapter.start_scan(ScanFilter::default()).await?;
     tokio::time::sleep(Duration::from_secs(2)).await;
 

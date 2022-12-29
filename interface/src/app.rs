@@ -1,7 +1,3 @@
-use std::sync::Arc;
-
-use poll_promise::Promise;
-
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize, Default)]
 #[serde(default)]
@@ -10,29 +6,21 @@ pub struct EmberMugApp {
     #[serde(skip)]
     mug: Option<Mug>,
     #[serde(skip)]
-    promises: Promises,
+    resolver: crate::runtime::Resolver<&'static str>,
 }
 
 pub struct Mug {
     mug: ember_mug::EmberMug,
-    data: Arc<tokio::sync::RwLock<MugData>>,
+    data: MugData,
 }
+
+#[derive(Debug)]
 pub struct MugData {
-    target_temp: f32,
-    current_temp: f32,
-    temp_unit: ember_mug::TemperatureUnit,
-    state: ember_mug::LiquidState,
-    battery: ember_mug::Battery,
-}
-#[derive(Default)]
-struct Promises {
-    device: Option<Promise<Result<Mug, color_eyre::Report>>>,
-    streams: Option<(
-        flume::Receiver<ember_mug::PushEvent>,
-        tokio::task::AbortHandle,
-    )>,
-    join_set: tokio::task::JoinSet<Result<(), color_eyre::Report>>,
-    device_fail: Option<color_eyre::Report>,
+    pub target_temp: f32,
+    pub current_temp: f32,
+    pub temp_unit: ember_mug::TemperatureUnit,
+    pub state: ember_mug::LiquidState,
+    pub battery: ember_mug::Battery,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -83,195 +71,106 @@ impl eframe::App for EmberMugApp {
         let Self {
             settings,
             mug,
-            promises,
+            resolver,
         } = self;
+        resolver.poll();
+        ctx.request_repaint();
 
         if mug.is_none() {
-            if let Some(p) = promises.device.take() {
-                match p.try_take() {
-                    Ok(Ok(v)) => {
-                        let (sender, receiver) = flume::unbounded();
-                        let mug_c = v.mug.clone();
-                        let abort = {
-                            let ctx = ctx.clone();
-                            promises.join_set.spawn(async move {
-                                use futures::{FutureExt, StreamExt};
-                                let sender = sender.clone();
-                                let mug = mug_c;
-                                let mut events = mug.listen_push_events().await?.boxed();
-                                while let Some(event) = events.next().await {
-                                    sender.send(event?)?;
-                                    ctx.request_repaint();
-                                }
-                                Ok::<_, color_eyre::Report>(())
-                            })
-                        };
-                        let data = v.data.clone();
-                        let mug_c = v.mug.clone();
-                        {
-                            let ctx = ctx.clone();
-                            let abort = promises.join_set.spawn(async move {
-                                let mut interval =
-                                    tokio::time::interval(std::time::Duration::from_secs(10));
-                                loop {
-                                    interval.tick().await;
-                                    let target_temp =
-                                        mug_c.get_target_temperature().await?.to_degree();
-                                    let current_temp =
-                                        mug_c.get_current_temperature().await?.to_degree();
-                                    let state = mug_c.get_liquid_state().await?;
-                                    let temp_unit = mug_c.get_temperature_unit().await?;
-                                    let battery = mug_c.get_battery().await?;
-                                    let mut data = data.write().await;
-                                    data.target_temp = target_temp;
-                                    data.current_temp = current_temp;
-                                    data.state = state;
-                                    data.temp_unit = temp_unit;
-                                    data.battery = battery;
-                                    ctx.request_repaint();
-                                }
-                                Ok(())
-                            });
-                        }
-                        promises.streams = Some((receiver, abort));
+            let ctx_c = ctx.clone();
+            if let Some(p) = resolver.try_take_with("device", async move {
+                let _a = defer(move || ctx_c.request_repaint());
+
+                let mug = ember_mug::EmberMug::find_and_connect().await?;
+
+                let target_temp = mug.get_target_temperature().await?.to_degree();
+                let current_temp = mug.get_current_temperature().await?.to_degree();
+                let state = mug.get_liquid_state().await?;
+                let temp_unit = mug.get_temperature_unit().await?;
+                let battery = mug.get_battery().await?;
+                Ok::<_, color_eyre::Report>(Mug {
+                    mug,
+                    data: MugData {
+                        target_temp,
+                        current_temp,
+                        temp_unit,
+                        state,
+                        battery,
+                    },
+                })
+            }) {
+                match p {
+                    Ok(v) => {
                         mug.replace(v);
-                        promises.device_fail = None;
                     }
-                    Ok(Err(e)) => {
-                        promises.device_fail = Some(e);
+                    Err(e) => {
+                        tracing::warn!(error=?e, "got error");
                         ctx.request_repaint();
                     }
-                    Err(p) => {
-                        promises.device = Some(p);
-                    }
                 }
-            } else {
-                let ctx = ctx.clone();
-                promises.device = Some(poll_promise::Promise::spawn_async(async move {
-                    let _a = defer(move || ctx.request_repaint());
-
-                    let mug = ember_mug::EmberMug::find_and_connect().await?;
-
-                    let target_temp = mug.get_target_temperature().await?.to_degree();
-                    let current_temp = mug.get_current_temperature().await?.to_degree();
-                    let state = mug.get_liquid_state().await?;
-                    let temp_unit = mug.get_temperature_unit().await?;
-                    let battery = mug.get_battery().await?;
-                    Ok(Mug {
-                        mug,
-                        data: Arc::new(
-                            MugData {
+            }
+        } else if let Some(mug) = mug {
+            let mug_mug = mug.mug.clone();
+            if let Some(update) = resolver
+                .try_stream_with::<_, _, color_eyre::Report>("event", move |sender| {
+                    let mug = mug_mug.clone();
+                    let ctx = ctx.clone();
+                    async move {
+                        let mut interval =
+                            tokio::time::interval(std::time::Duration::from_secs(10));
+                        loop {
+                            interval.tick().await;
+                            let target_temp = mug.get_target_temperature().await?.to_degree();
+                            let current_temp = mug.get_current_temperature().await?.to_degree();
+                            let state = mug.get_liquid_state().await?;
+                            let temp_unit = mug.get_temperature_unit().await?;
+                            let battery = mug.get_battery().await?;
+                            ctx.request_repaint();
+                            sender.send(MugData {
                                 target_temp,
                                 current_temp,
-                                temp_unit,
                                 state,
+                                temp_unit,
                                 battery,
-                            }
-                            .into(),
-                        ),
-                    })
-                }));
+                            })?;
+                        }
+                    }
+                })
+                .unwrap()
+            {
+                tracing::debug!(?update, "update");
+                mug.data = update;
             }
-        } else if let Some((recv, _)) = &promises.streams {
-            let mug = mug.as_ref().unwrap();
-            for event in recv.drain() {
-                let data = mug.data.clone();
-                let mug = mug.mug.clone();
-                dbg!(&event);
+            let mug_mug = mug.mug.clone();
+            if let Some(event) = resolver
+                .try_stream_with::<_, _, color_eyre::Report>("listen_push_events", |sender| {
+                    let mug = mug_mug.clone();
+                    let ctx = ctx.clone();
+                    tracing::debug!("event stream initialize");
+
+                    async move {
+                        use futures::StreamExt;
+                        let mut events = mug.listen_push_events().await?.boxed();
+                        tracing::debug!("listening to events");
+                        while let Some(event) = events.next().await {
+                            let event = match event {
+                                Ok(e) => crate::events::PushEvent::new(&mug, e).await,
+                                Err(_) => todo!(),
+                            };
+                            tracing::debug!(?event, "got event");
+
+                            sender.send(event)?;
+                            ctx.request_repaint();
+                        }
+                        Ok(())
+                    }
+                })
+                .unwrap()
+            {
+                tracing::debug!(?event, "got event");
                 match event {
-                    ember_mug::PushEvent::RefreshBatteryLevel => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let v = mug.get_battery().await?;
-                            let mut data = data.write().await;
-                            data.battery = v;
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::Charging => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let mut data = data.write().await;
-                            data.battery.charge = true;
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::NotCharging => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let mut data = data.write().await;
-                            data.battery.charge = false;
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::RefreshTargetTemperature => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let v = mug.get_target_temperature().await?;
-                            let mut data = data.write().await;
-                            data.target_temp = v.to_degree();
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::RefreshDrinkTemperature => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let v = mug.get_current_temperature().await?;
-                            let mut data = data.write().await;
-                            data.current_temp = v.to_degree();
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::AuthInfoNotFound => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            dbg!("oops");
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::RefreshLiquidLevel => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let _v = mug.get_liquid_level().await?;
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::RefreshLiquidState => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let v = mug.get_liquid_state().await?;
-                            let mut data = data.write().await;
-                            data.state = v;
-                            Ok(())
-                        });
-                    }
-                    ember_mug::PushEvent::BatteryVoltageState => {
-                        let ctx = ctx.clone();
-                        promises.join_set.spawn(async move {
-                            let _a = defer(move || ctx.request_repaint());
-
-                            let v = mug.get_battery().await?;
-                            let mut data = data.write().await;
-                            data.battery = v;
-                            Ok(())
-                        });
-                    }
+                    Ok(event) => event.update(&mut mug.data),
+                    Err(e) => tracing::error!(err = ?e),
                 }
             }
         }
@@ -283,11 +182,12 @@ impl eframe::App for EmberMugApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
-            if let Some(e) = &promises.device_fail {
-                ui.label(e.to_string());
-            }
+
+            // if let Some(e) = &promises.device_fail {
+            //     ui.label(e.to_string());
+            // }
             if let Some(mug) = mug {
-                let data = tokio::task::block_in_place(|| mug.data.blocking_read());
+                let data = &mug.data;
                 ui.label(format!(
                     "Battery: {}, is {}charging",
                     data.battery.battery,

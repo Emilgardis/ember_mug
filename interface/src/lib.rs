@@ -1,5 +1,6 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 mod app;
-mod repaint;
+pub mod runtime;
 pub use app::EmberMugApp;
+pub mod events;

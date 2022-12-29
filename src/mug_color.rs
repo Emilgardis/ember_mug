@@ -6,7 +6,7 @@ impl EmberMug {
     }
     /// Sets the color of the mug's LED indicator.
     pub async fn set_mug_color(&self, color: &Color) -> Result<(), WriteError> {
-       self.command(&MUG_COLOR, color).await
+        self.command(&MUG_COLOR, color).await
     }
 }
 

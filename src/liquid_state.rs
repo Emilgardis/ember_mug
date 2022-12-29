@@ -10,15 +10,40 @@ impl EmberMug {
 #[br(repr = u8)]
 #[br(little)]
 pub enum LiquidState {
-    Empty = 1,
-    Filling = 2,
-    Unknown = 3,
-    Cooling = 4,
-    Heating = 5,
-    StableTemperature = 6,
+    Unknown,
+    Empty,
+    Filling,
+    ColdNoTempControl,
+    Cooling,
+    Heating,
+    TargetTemperature,
+    WarmNoTempControl,
+}
+
+impl std::fmt::Display for LiquidState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LiquidState::Unknown => f.write_str("Unknown"),
+            LiquidState::Empty => f.write_str("Empty"),
+            LiquidState::Filling => f.write_str("Filling"),
+            LiquidState::ColdNoTempControl => f.write_str("Cold (No control)"),
+            LiquidState::Cooling => f.write_str("Cooling"),
+            LiquidState::Heating => f.write_str("Heating"),
+            LiquidState::TargetTemperature => f.write_str("Perfect"),
+            LiquidState::WarmNoTempControl => f.write_str("Warm (No control)"),
+        }
+    }
 }
 
 impl LiquidState {
+    /// Returns `true` if the liquid state is [`Unknown`].
+    ///
+    /// [`Unknown`]: LiquidState::Unknown
+    #[must_use]
+    pub fn is_unknown(&self) -> bool {
+        matches!(self, Self::Unknown)
+    }
+
     /// Returns `true` if the liquid state is [`Empty`].
     ///
     /// [`Empty`]: LiquidState::Empty
@@ -33,6 +58,14 @@ impl LiquidState {
     #[must_use]
     pub fn is_filling(&self) -> bool {
         matches!(self, Self::Filling)
+    }
+
+    /// Returns `true` if the liquid state is [`ColdNoTempControl`].
+    ///
+    /// [`ColdNoTempControl`]: LiquidState::ColdNoTempControl
+    #[must_use]
+    pub fn is_cold_no_temp_control(&self) -> bool {
+        matches!(self, Self::ColdNoTempControl)
     }
 
     /// Returns `true` if the liquid state is [`Cooling`].
@@ -51,11 +84,19 @@ impl LiquidState {
         matches!(self, Self::Heating)
     }
 
-    /// Returns `true` if the liquid state is [`StableTemperature`].
+    /// Returns `true` if the liquid state is [`TargetTemperature`].
     ///
-    /// [`StableTemperature`]: LiquidState::StableTemperature
+    /// [`TargetTemperature`]: LiquidState::TargetTemperature
     #[must_use]
-    pub fn is_stable_temperature(&self) -> bool {
-        matches!(self, Self::StableTemperature)
+    pub fn is_target_temperature(&self) -> bool {
+        matches!(self, Self::TargetTemperature)
+    }
+
+    /// Returns `true` if the liquid state is [`WarmNoTempControl`].
+    ///
+    /// [`WarmNoTempControl`]: LiquidState::WarmNoTempControl
+    #[must_use]
+    pub fn is_warm_no_temp_control(&self) -> bool {
+        matches!(self, Self::WarmNoTempControl)
     }
 }

@@ -220,6 +220,7 @@ impl EmberMug {
         EmberMug::connect_mug(mug).await
     }
     pub async fn connect_mug(peripheral: Peripheral) -> Result<EmberMug, ConnectError> {
+        tracing::debug!(peripheral.address = ?peripheral.address(), peripheral.id = ?peripheral.id(), "connecting to mug");
         peripheral.connect().await?;
         peripheral.discover_services().await?;
         Ok(EmberMug {

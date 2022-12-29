@@ -3,17 +3,26 @@
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
-#[tokio::main]
-async fn main() {
+fn main() {
     // Log to stdout (if you run with `RUST_LOG=debug`).
-    tracing_subscriber::fmt::init();
+
+    use tracing_subscriber::EnvFilter;
+    tracing_subscriber::fmt()
+        .with_line_number(true)
+        .with_file(true)
+        .with_env_filter(EnvFilter::from_default_env())
+        .pretty()
+        .init();
+    color_eyre::install().unwrap();
 
     let native_options = eframe::NativeOptions::default();
+    let stop = ember_mug_interface::runtime::start();
     eframe::run_native(
         "Ember Mug",
         native_options,
         Box::new(|cc| Box::new(ember_mug_interface::EmberMugApp::new(cc))),
     );
+    stop();
 }
 
 // when compiling to web using trunk.

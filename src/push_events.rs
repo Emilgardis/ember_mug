@@ -20,8 +20,10 @@ impl EmberMug {
     /// Get a stream of events sent by the mug
     pub async fn listen_push_events(
         &self,
-    ) -> Result<impl futures::stream::Stream<Item = Result<PushEvent, ReadError>> + '_, ReadError>
-    {
+    ) -> Result<
+        impl futures::stream::Stream<Item = Result<PushEvent, ReadError>> + Send + '_,
+        ReadError,
+    > {
         use futures::StreamExt;
         self.subscribe_push_events().await?;
         let stream = self
@@ -149,5 +151,19 @@ impl PushEvent {
     #[must_use]
     pub fn is_battery_voltage_state(&self) -> bool {
         matches!(self, Self::BatteryVoltageState)
+    }
+
+    pub fn event_name(&self) -> &'static str {
+        match self {
+            PushEvent::RefreshBatteryLevel => "refresh_battery_level::event",
+            PushEvent::Charging => "charging::event",
+            PushEvent::NotCharging => "not_charging::event",
+            PushEvent::RefreshTargetTemperature => "refresh_target_temperature::event",
+            PushEvent::RefreshDrinkTemperature => "refresh_drink_temperature::event",
+            PushEvent::AuthInfoNotFound => "auth_info_not_found::event",
+            PushEvent::RefreshLiquidLevel => "refresh_liquid_level::event",
+            PushEvent::RefreshLiquidState => "refresh_liquid_state::event",
+            PushEvent::BatteryVoltageState => "battery_voltage_state::event",
+        }
     }
 }

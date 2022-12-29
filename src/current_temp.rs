@@ -5,4 +5,3 @@ impl EmberMug {
         Temperature::read(&mut Cursor::new(self.read(&CURRENT_TEMP).await?)).map_err(Into::into)
     }
 }
-
