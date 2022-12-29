@@ -21,7 +21,7 @@ pub use liquid_state::LiquidState;
 pub use mug_color::Color;
 pub use mug_meta::MugMeta;
 pub use ota::Ota;
-pub use push_events::PushEvents;
+pub use push_events::PushEvent;
 pub use temperature_unit::TemperatureUnit;
 pub use time_date_zone::TimeDateZone;
 
@@ -162,6 +162,7 @@ impl KnownCharacteristic {
 
 use characteristics::*;
 
+#[derive(Clone)]
 pub struct EmberMug {
     peripheral: Peripheral,
     characteristics: std::collections::BTreeSet<Characteristic>,

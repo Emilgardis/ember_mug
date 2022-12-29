@@ -3,8 +3,8 @@ impl EmberMug {
     /// Events sent by the mug for the application to register to.
     ///
     /// Call [`subscribe_push_events`](Self::unsubscribe_push_events) first, and prefer to use [`listen_push_events`](Self::listen_push_events) instead
-    pub async fn get_push_event(&self) -> Result<PushEvents, ReadError> {
-        PushEvents::read(&mut Cursor::new(self.read(&PUSH_EVENTS).await?)).map_err(Into::into)
+    pub async fn get_push_event(&self) -> Result<PushEvent, ReadError> {
+        PushEvent::read(&mut Cursor::new(self.read(&PUSH_EVENTS).await?)).map_err(Into::into)
     }
     /// Subscribe to events sent by the mug
     pub async fn subscribe_push_events(&self) -> Result<(), ReadError> {
@@ -20,9 +20,10 @@ impl EmberMug {
     /// Get a stream of events sent by the mug
     pub async fn listen_push_events(
         &self,
-    ) -> Result<impl futures::stream::Stream<Item = Result<PushEvents, ReadError>> + '_, ReadError>
+    ) -> Result<impl futures::stream::Stream<Item = Result<PushEvent, ReadError>> + '_, ReadError>
     {
         use futures::StreamExt;
+        self.subscribe_push_events().await?;
         let stream = self
             .peripheral
             .notifications()
@@ -30,7 +31,7 @@ impl EmberMug {
             .filter_map(move |v| async move {
                 if v.uuid == PUSH_EVENTS {
                     match self.read(&PUSH_EVENTS).await {
-                        Ok(b) => Some(PushEvents::read(&mut Cursor::new(b)).map_err(Into::into)),
+                        Ok(b) => Some(PushEvent::read(&mut Cursor::new(b)).map_err(Into::into)),
                         Err(e) => Some(Err(e)),
                     }
                 } else {
@@ -56,7 +57,7 @@ impl EmberMug {
 #[derive(BinRead, Debug)]
 #[br(repr = u8)]
 #[br(little)]
-pub enum PushEvents {
+pub enum PushEvent {
     /// Refresh battery level
     RefreshBatteryLevel = 0x01,
     /// Charging
@@ -75,4 +76,78 @@ pub enum PushEvents {
     RefreshLiquidState = 0x08,
     /// Battery voltage state changed
     BatteryVoltageState = 0x09,
+}
+
+impl PushEvent {
+    /// Returns `true` if the push event is [`RefreshBatteryLevel`].
+    ///
+    /// [`RefreshBatteryLevel`]: PushEvent::RefreshBatteryLevel
+    #[must_use]
+    pub fn is_refresh_battery_level(&self) -> bool {
+        matches!(self, Self::RefreshBatteryLevel)
+    }
+
+    /// Returns `true` if the push event is [`Charging`].
+    ///
+    /// [`Charging`]: PushEvent::Charging
+    #[must_use]
+    pub fn is_charging(&self) -> bool {
+        matches!(self, Self::Charging)
+    }
+
+    /// Returns `true` if the push event is [`NotCharging`].
+    ///
+    /// [`NotCharging`]: PushEvent::NotCharging
+    #[must_use]
+    pub fn is_not_charging(&self) -> bool {
+        matches!(self, Self::NotCharging)
+    }
+
+    /// Returns `true` if the push event is [`RefreshTargetTemperature`].
+    ///
+    /// [`RefreshTargetTemperature`]: PushEvent::RefreshTargetTemperature
+    #[must_use]
+    pub fn is_refresh_target_temperature(&self) -> bool {
+        matches!(self, Self::RefreshTargetTemperature)
+    }
+
+    /// Returns `true` if the push event is [`RefreshDrinkTemperature`].
+    ///
+    /// [`RefreshDrinkTemperature`]: PushEvent::RefreshDrinkTemperature
+    #[must_use]
+    pub fn is_refresh_drink_temperature(&self) -> bool {
+        matches!(self, Self::RefreshDrinkTemperature)
+    }
+
+    /// Returns `true` if the push event is [`AuthInfoNotFound`].
+    ///
+    /// [`AuthInfoNotFound`]: PushEvent::AuthInfoNotFound
+    #[must_use]
+    pub fn is_auth_info_not_found(&self) -> bool {
+        matches!(self, Self::AuthInfoNotFound)
+    }
+
+    /// Returns `true` if the push event is [`RefreshLiquidLevel`].
+    ///
+    /// [`RefreshLiquidLevel`]: PushEvent::RefreshLiquidLevel
+    #[must_use]
+    pub fn is_refresh_liquid_level(&self) -> bool {
+        matches!(self, Self::RefreshLiquidLevel)
+    }
+
+    /// Returns `true` if the push event is [`RefreshLiquidState`].
+    ///
+    /// [`RefreshLiquidState`]: PushEvent::RefreshLiquidState
+    #[must_use]
+    pub fn is_refresh_liquid_state(&self) -> bool {
+        matches!(self, Self::RefreshLiquidState)
+    }
+
+    /// Returns `true` if the push event is [`BatteryVoltageState`].
+    ///
+    /// [`BatteryVoltageState`]: PushEvent::BatteryVoltageState
+    #[must_use]
+    pub fn is_battery_voltage_state(&self) -> bool {
+        matches!(self, Self::BatteryVoltageState)
+    }
 }
