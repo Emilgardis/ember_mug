@@ -7,17 +7,30 @@ impl EmberMug {
 }
 
 #[derive(BinRead, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(rename_all = "snake_case"))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(rename_all = "snake_case")
+)]
 #[br(repr = u8)]
 #[br(little)]
+/// Represents the current state of the liquid in an Ember Mug
 pub enum LiquidState {
+    /// The liquid state is unknown
     Unknown,
+    /// The mug is empty
     Empty,
+    /// The mug is filling with liquid
     Filling,
+    /// The mug is cold and temperature control is disabled
     ColdNoTempControl,
+    /// The mug is cooling down to the target temperature
     Cooling,
+    /// The mug is heating up to the target temperature
     Heating,
+    /// The mug's liquid is at the target temperature
     TargetTemperature,
+    /// The mug is warm and temperature control is disabled
     WarmNoTempControl,
 }
 

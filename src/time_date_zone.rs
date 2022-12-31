@@ -13,13 +13,14 @@ impl EmberMug {
     }
 }
 
+/// Time and date + timezone
 #[derive(Debug, BinWrite, BinRead)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[bw(little)]
 #[br(little)]
 pub struct TimeDateZone {
     /// Unix timestamp recorded by the app.
-    unix_timestamp: u32,
+    pub unix_timestamp: u32,
     /// Timezone offset (ex: GMT+03)
-    offset: u8,
+    pub offset: u8,
 }

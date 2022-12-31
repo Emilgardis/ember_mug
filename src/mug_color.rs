@@ -10,17 +10,18 @@ impl EmberMug {
     }
 }
 
+/// Color tint for an Ember Mug
 #[derive(BinRead, BinWrite, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[br(little)]
 #[bw(little)]
 pub struct Color {
-    /// Red
+    /// Red value (0-255)
     pub r: u8,
-    /// Green
+    /// Green value (0-255)
     pub g: u8,
-    /// Blue
+    /// Blue value (0-255)
     pub b: u8,
-    /// Alpha
+    /// Alpha value (0-255)
     pub a: u8,
 }

@@ -1,5 +1,6 @@
 use super::*;
 impl EmberMug {
+    #[doc(hidden)]
     pub async fn set_last_location(&self, last_location: &LastLocation) -> Result<(), WriteError> {
         self.command(&LAST_LOCATION, last_location).await
     }

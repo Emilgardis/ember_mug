@@ -14,14 +14,21 @@ impl EmberMug {
     }
 }
 
+/// Temperature unit/scale
 #[derive(BinRead, BinWrite, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(rename_all = "snake_case"))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(rename_all = "snake_case")
+)]
 #[br(repr = u8)]
 #[bw(repr = u8)]
 #[br(little)]
 #[bw(little)]
 pub enum TemperatureUnit {
+    /// Celcius
     Celsius = 0,
+    /// Fahrenheit
     Fahrenheit = 1,
 }
 

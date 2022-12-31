@@ -6,6 +6,7 @@ impl EmberMug {
     }
 }
 
+/// Version information for the device
 #[derive(BinRead, BinWrite, Debug)]
 #[br(little)]
 #[bw(little)]

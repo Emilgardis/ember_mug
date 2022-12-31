@@ -56,8 +56,13 @@ impl EmberMug {
     }
 }
 
+/// Events to trigger updates in application state
 #[derive(BinRead, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(rename_all = "snake_case"))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(rename_all = "snake_case")
+)]
 #[br(repr = u8)]
 #[br(little)]
 pub enum PushEvent {
@@ -152,19 +157,5 @@ impl PushEvent {
     #[must_use]
     pub fn is_battery_voltage_state(&self) -> bool {
         matches!(self, Self::BatteryVoltageState)
-    }
-
-    pub fn event_name(&self) -> &'static str {
-        match self {
-            PushEvent::RefreshBatteryLevel => "refresh_battery_level::event",
-            PushEvent::Charging => "charging::event",
-            PushEvent::NotCharging => "not_charging::event",
-            PushEvent::RefreshTargetTemperature => "refresh_target_temperature::event",
-            PushEvent::RefreshDrinkTemperature => "refresh_drink_temperature::event",
-            PushEvent::AuthInfoNotFound => "auth_info_not_found::event",
-            PushEvent::RefreshLiquidLevel => "refresh_liquid_level::event",
-            PushEvent::RefreshLiquidState => "refresh_liquid_state::event",
-            PushEvent::BatteryVoltageState => "battery_voltage_state::event",
-        }
     }
 }

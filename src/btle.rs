@@ -1,3 +1,4 @@
+//! Functions for communicating with BLE to connect to Ember Mugs
 use std::time::Duration;
 
 use btleplug::{
@@ -7,6 +8,7 @@ use btleplug::{
 
 use crate::SearchError;
 
+/// Search given adapter for a mug
 pub async fn search_adapter_for_ember(
     adapter: &platform::Adapter,
     mac: Option<BDAddr>,
@@ -43,6 +45,7 @@ pub async fn search_adapter_for_ember(
     Ok(mugs)
 }
 
+/// Get mugs on all adapters
 pub async fn get_mugs() -> Result<
     impl futures::Stream<Item = Result<crate::Peripheral, SearchError>> + 'static,
     SearchError,
@@ -52,6 +55,7 @@ pub async fn get_mugs() -> Result<
     Ok(get_mugs_on_adapters(&adapters).await)
 }
 
+/// Search for mugs on all adapters
 pub async fn get_mugs_on_adapters(
     adapters: &[platform::Adapter],
 ) -> impl futures::Stream<Item = Result<crate::Peripheral, SearchError>> + 'static {

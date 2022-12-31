@@ -6,18 +6,30 @@ impl EmberMug {
     }
 }
 
+/// Level of the liquid
+///
+/// # Notes
+///
+/// This seems to be highly unspecific, 0 = empty, not 0 = has liquid
 #[derive(BinRead, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(transparent))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(transparent)
+)]
 #[br(little)]
 pub struct LiquidLevel {
-    level: u8,
+    /// The given amount of liquid
+    pub level: u8,
 }
 
 impl LiquidLevel {
+    /// Mug is empty
     pub fn is_empty(&self) -> bool {
         self.level == 0
     }
 
+    /// Mug has liquid
     pub fn has_liquid(&self) -> bool {
         self.level != 0
     }

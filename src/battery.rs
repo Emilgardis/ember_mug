@@ -7,6 +7,7 @@ impl EmberMug {
     }
 }
 
+/// Battery information
 #[derive(BinRead, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[br(little)]

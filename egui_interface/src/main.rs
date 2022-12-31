@@ -18,11 +18,11 @@ fn main() {
     let native_options = eframe::NativeOptions {
         ..Default::default()
     };
-    let stop = ember_mug_interface::runtime::start();
+    let stop = ember_mug_egui::runtime::start();
     eframe::run_native(
         "Ember Mug",
         native_options,
-        Box::new(|cc| Box::new(ember_mug_interface::EmberMugApp::new(cc))),
+        Box::new(|cc| Box::new(ember_mug_egui::EmberMugApp::new(cc))),
     );
     stop();
 }
@@ -42,7 +42,7 @@ fn main() {
         eframe::start_web(
             "the_canvas_id", // hardcode it
             web_options,
-            Box::new(|cc| Box::new(eframe_template::TemplateApp::new(cc))),
+            Box::new(|cc| Box::new(ember_mug_egui::EmberMugApp::new(cc))),
         )
         .await
         .expect("failed to start eframe");
