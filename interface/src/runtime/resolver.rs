@@ -147,6 +147,9 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
             Err(flume::TryRecvError::Empty) => return Ok(None),
             Err(e) => {
                 self.streams.remove(&key);
+                if self.streams.capacity() as f32 / 1.5 >= self.streams.len() as f32 {
+                    self.streams.shrink_to_fit()
+                }
                 self.pending.retain(|(k, _)| k != &key);
                 return Err(StreamError::TryRecvError(e));
             }
