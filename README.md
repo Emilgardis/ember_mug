@@ -45,9 +45,9 @@ Results in
 ```text
 Connected to an Ember Mug with the name 'EMBER'
 Battery level: 100%
-Current temperature: 20.5 °C
-Target temperature: 54 °C
-Changed target temperature to 60 °C
+Current temperature: 20.5°C
+Target temperature: 54°C
+Changed target temperature to 60°C
 ```
 
 
