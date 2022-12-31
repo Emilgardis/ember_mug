@@ -16,8 +16,8 @@
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the target temperature of the mug
     </span><span class="kw">pub async fn </span>get_target_temperature(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Temperature, ReadError&gt; {
-        Temperature::read(<span class="kw-2">&amp;mut </span>Cursor::new(<span class="self">self</span>.read(<span class="kw-2">&amp;</span>TARGET_TEMP).<span class="kw">await</span><span class="question-mark">?</span>)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>TARGET_TEMP).<span class="kw">await
+    </span>}
     <span class="doccomment">/// Set the target temperature of the mug
     </span><span class="kw">pub async fn </span>set_target_temperature(
         <span class="kw-2">&amp;</span><span class="self">self</span>,

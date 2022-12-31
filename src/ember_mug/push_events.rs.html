@@ -156,17 +156,14 @@
 <a href="#156" id="156">156</a>
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Events sent by the mug for the application to register to.
     ///
     /// Call [`subscribe_push_events`](Self::unsubscribe_push_events) first, and prefer to use [`listen_push_events`](Self::listen_push_events) instead
     </span><span class="kw">pub async fn </span>get_push_event(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;PushEvent, ReadError&gt; {
-        PushEvent::read(<span class="kw-2">&amp;mut </span>Cursor::new(<span class="self">self</span>.read(<span class="kw-2">&amp;</span>PUSH_EVENTS).<span class="kw">await</span><span class="question-mark">?</span>)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>PUSH_EVENTS).<span class="kw">await
+    </span>}
     <span class="doccomment">/// Subscribe to events sent by the mug
     </span><span class="kw">pub async fn </span>subscribe_push_events(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), ReadError&gt; {
         <span class="self">self</span>.peripheral
@@ -193,10 +190,7 @@
             .<span class="kw">await</span><span class="question-mark">?
             </span>.filter_map(<span class="kw">move </span>|v| <span class="kw">async move </span>{
                 <span class="kw">if </span>v.uuid == PUSH_EVENTS {
-                    <span class="kw">match </span><span class="self">self</span>.read(<span class="kw-2">&amp;</span>PUSH_EVENTS).<span class="kw">await </span>{
-                        <span class="prelude-val">Ok</span>(b) =&gt; <span class="prelude-val">Some</span>(PushEvent::read(<span class="kw-2">&amp;mut </span>Cursor::new(b)).map_err(Into::into)),
-                        <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(e)),
-                    }
+                    <span class="prelude-val">Some</span>(<span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>PUSH_EVENTS).<span class="kw">await</span>)
                 } <span class="kw">else </span>{
                     <span class="macro">tracing::debug!</span>(%v.uuid, <span class="question-mark">?</span>v.value, <span class="string">&quot;received unknown event&quot;</span>);
                     <span class="prelude-val">None

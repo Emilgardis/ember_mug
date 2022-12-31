@@ -118,8 +118,8 @@
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// The current state of the mug
     </span><span class="kw">pub async fn </span>get_liquid_state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;LiquidState, ReadError&gt; {
-        LiquidState::read(<span class="kw-2">&amp;mut </span>Cursor::new(<span class="self">self</span>.read(<span class="kw-2">&amp;</span>LIQUID_STATE).<span class="kw">await</span><span class="question-mark">?</span>)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>LIQUID_STATE).<span class="kw">await
+    </span>}
 }
 
 <span class="attr">#[derive(BinRead, Debug)]

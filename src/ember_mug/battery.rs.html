@@ -27,8 +27,8 @@
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the battery percentage of the mug and other values.
     </span><span class="kw">pub async fn </span>get_battery(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Battery, ReadError&gt; {
-        Battery::read(<span class="kw-2">&amp;mut </span>Cursor::new(<span class="self">self</span>.read(<span class="kw-2">&amp;</span>BATTERY).<span class="kw">await</span><span class="question-mark">?</span>)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>BATTERY).<span class="kw">await
+    </span>}
 }
 
 <span class="doccomment">/// Battery information

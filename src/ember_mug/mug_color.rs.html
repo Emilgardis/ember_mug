@@ -29,8 +29,8 @@
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the color of the mug&#39;s LED indicator.
     </span><span class="kw">pub async fn </span>get_mug_color(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Color, ReadError&gt; {
-        Color::read(<span class="kw-2">&amp;mut </span>Cursor::new(<span class="self">self</span>.read(<span class="kw-2">&amp;</span>MUG_COLOR).<span class="kw">await</span><span class="question-mark">?</span>)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>MUG_COLOR).<span class="kw">await
+    </span>}
     <span class="doccomment">/// Sets the color of the mug&#39;s LED indicator.
     </span><span class="kw">pub async fn </span>set_mug_color(<span class="kw-2">&amp;</span><span class="self">self</span>, color: <span class="kw-2">&amp;</span>Color) -&gt; <span class="prelude-ty">Result</span>&lt;(), WriteError&gt; {
         <span class="self">self</span>.command(<span class="kw-2">&amp;</span>MUG_COLOR, color).<span class="kw">await

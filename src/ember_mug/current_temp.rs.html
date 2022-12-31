@@ -9,8 +9,8 @@
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the current temperature of the mug
     </span><span class="kw">pub async fn </span>get_current_temperature(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Temperature, ReadError&gt; {
-        Temperature::read(<span class="kw-2">&amp;mut </span>Cursor::new(<span class="self">self</span>.read(<span class="kw-2">&amp;</span>CURRENT_TEMP).<span class="kw">await</span><span class="question-mark">?</span>)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>CURRENT_TEMP).<span class="kw">await
+    </span>}
 }
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="ember_mug" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (ce85c9857 2022-12-30)" data-search-js="search-181581080540673f.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-58836c674e2f7bd2.css" ></div></body></html>

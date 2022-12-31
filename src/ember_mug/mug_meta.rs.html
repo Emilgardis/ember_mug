@@ -17,16 +17,12 @@
 <a href="#17" id="17">17</a>
 <a href="#18" id="18">18</a>
 <a href="#19" id="19">19</a>
-<a href="#20" id="20">20</a>
-<a href="#21" id="21">21</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves id of the mug
     </span><span class="kw">pub async fn </span>get_mug_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;MugMeta, ReadError&gt; {
-        <span class="kw">let </span>b = <span class="self">self</span>.read(<span class="kw-2">&amp;</span>MUG_ID).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, b.as_slice().escape_ascii());
-        MugMeta::read(<span class="kw-2">&amp;mut </span>Cursor::new(b)).map_err(Into::into)
-    }
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span>MUG_ID).<span class="kw">await
+    </span>}
 }
 
 <span class="doccomment">/// Metadata for the device
