@@ -18,7 +18,7 @@ jobs:
           toolchain: nightly
       - uses: Swatinem/rust-cache@v2
       - name: build docs
-        run: cargo doc --no-deps
+        run: cargo doc --no-deps -Zunstable-options -Zrustdoc-scrape-examples -Zrustdoc-map
       - name: move index.html
         run: cp ./docs/index.html ./target/doc/index.html
       - name: Deploy
