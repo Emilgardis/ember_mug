@@ -46,45 +46,45 @@ mod characteristics {
     pub const EMBER_MUG_SERVICE_UUID: uuid::Uuid = uuid!("fc543622-236c-4c94-8fa9-944a3e5353fa");
 
     /// The UUID for the Name characteristic
-    pub static NAME: uuid::Uuid             = uuid!("fc540001-236c-4c94-8fa9-944a3e5353fa");
+    pub const NAME: uuid::Uuid             = uuid!("fc540001-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Current Temperature characteristic
-    pub static CURRENT_TEMP: uuid::Uuid     = uuid!("fc540002-236c-4c94-8fa9-944a3e5353fa");
+    pub const CURRENT_TEMP: uuid::Uuid     = uuid!("fc540002-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Target Temperature characteristic
-    pub static TARGET_TEMP: uuid::Uuid      = uuid!("fc540003-236c-4c94-8fa9-944a3e5353fa");
+    pub const TARGET_TEMP: uuid::Uuid      = uuid!("fc540003-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Temperature Unit characteristic
-    pub static TEMPERATURE_UNIT: uuid::Uuid = uuid!("fc540004-236c-4c94-8fa9-944a3e5353fa");
+    pub const TEMPERATURE_UNIT: uuid::Uuid = uuid!("fc540004-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Liquid Level characteristic
-    pub static LIQUID_LEVEL: uuid::Uuid     = uuid!("fc540005-236c-4c94-8fa9-944a3e5353fa");
+    pub const LIQUID_LEVEL: uuid::Uuid     = uuid!("fc540005-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Time, Date, and Time Zone characteristic
-    pub static TIME_DATE_ZONE: uuid::Uuid   = uuid!("fc540006-236c-4c94-8fa9-944a3e5353fa");
+    pub const TIME_DATE_ZONE: uuid::Uuid   = uuid!("fc540006-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Battery characteristic
-    pub static BATTERY: uuid::Uuid          = uuid!("fc540007-236c-4c94-8fa9-944a3e5353fa");
+    pub const BATTERY: uuid::Uuid          = uuid!("fc540007-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Liquid State characteristic
-    pub static LIQUID_STATE: uuid::Uuid     = uuid!("fc540008-236c-4c94-8fa9-944a3e5353fa");
+    pub const LIQUID_STATE: uuid::Uuid     = uuid!("fc540008-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Over-the-Air Update characteristic
-    pub static OTA: uuid::Uuid              = uuid!("fc54000c-236c-4c94-8fa9-944a3e5353fa");
+    pub const OTA: uuid::Uuid              = uuid!("fc54000c-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Push Events characteristic
-    pub static PUSH_EVENTS: uuid::Uuid      = uuid!("fc540012-236c-4c94-8fa9-944a3e5353fa");
+    pub const PUSH_EVENTS: uuid::Uuid      = uuid!("fc540012-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Mug Color characteristic
-    pub static MUG_COLOR: uuid::Uuid        = uuid!("fc540014-236c-4c94-8fa9-944a3e5353fa");
+    pub const MUG_COLOR: uuid::Uuid        = uuid!("fc540014-236c-4c94-8fa9-944a3e5353fa");
 
     // extras
     /// The UUID for the Last Location characteristic
-    pub static LAST_LOCATION: uuid::Uuid    = uuid!("fc54000a-236c-4c94-8fa9-944a3e5353fa");
+    pub const LAST_LOCATION: uuid::Uuid    = uuid!("fc54000a-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Mug Identifier characteristic
-    pub static MUG_ID: uuid::Uuid           = uuid!("fc54000d-236c-4c94-8fa9-944a3e5353fa");
+    pub const MUG_ID: uuid::Uuid           = uuid!("fc54000d-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Device Secret Key characteristic
-    pub static DSK: uuid::Uuid              = uuid!("fc54000e-236c-4c94-8fa9-944a3e5353fa");
+    pub const DSK: uuid::Uuid              = uuid!("fc54000e-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the (U?) Device Secret Key characteristic
-    pub static UDSK: uuid::Uuid             = uuid!("fc54000f-236c-4c94-8fa9-944a3e5353fa");
+    pub const UDSK: uuid::Uuid             = uuid!("fc54000f-236c-4c94-8fa9-944a3e5353fa");
 
     // unknown
     /// The UUID for the Temperature Lock address characteristic
-    pub static CONTROL_REGISTER_ADDRESS: uuid::Uuid = uuid!("fc540010-236c-4c94-8fa9-944a3e5353fa");
+    pub const CONTROL_REGISTER_ADDRESS: uuid::Uuid = uuid!("fc540010-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Temperature Lock data characteristic
-    pub static CONTROL_REGISTER_DATA: uuid::Uuid     = uuid!("fc540011-236c-4c94-8fa9-944a3e5353fa");
+    pub const CONTROL_REGISTER_DATA: uuid::Uuid     = uuid!("fc540011-236c-4c94-8fa9-944a3e5353fa");
     /// The UUID for the Statistics characteristic
-    pub static STATISTICS: uuid::Uuid     = uuid!("fc540013-236c-4c94-8fa9-944a3e5353fa");
+    pub const STATISTICS: uuid::Uuid     = uuid!("fc540013-236c-4c94-8fa9-944a3e5353fa");
 }
 
 /// All known characteristics of an Ember Mug
@@ -166,7 +166,7 @@ pub enum KnownCharacteristic {
 
 impl KnownCharacteristic {
     /// Get the UUID for this characteristic
-    pub fn get(&self) -> &uuid::Uuid {
+    pub const fn get(&self) -> &'static uuid::Uuid {
         match self {
             KnownCharacteristic::Name => &NAME,
             KnownCharacteristic::CurrentTemp => &CURRENT_TEMP,
@@ -190,32 +190,38 @@ impl KnownCharacteristic {
     }
 
     /// Create a new known characteristic from UUID
-    pub fn new(uuid: &uuid::Uuid) -> Option<Self> {
+    pub const fn new(uuid: &uuid::Uuid) -> Option<Self> {
         Some(match uuid {
-            id if id == &NAME => KnownCharacteristic::Name,
-            id if id == &CURRENT_TEMP => KnownCharacteristic::CurrentTemp,
-            id if id == &TARGET_TEMP => KnownCharacteristic::TargetTemp,
-            id if id == &TEMPERATURE_UNIT => KnownCharacteristic::TemperatureUnit,
-            id if id == &LIQUID_LEVEL => KnownCharacteristic::LiquidLevel,
-            id if id == &TIME_DATE_ZONE => KnownCharacteristic::TimeDateZone,
-            id if id == &BATTERY => KnownCharacteristic::Battery,
-            id if id == &LIQUID_STATE => KnownCharacteristic::LiquidState,
-            id if id == &OTA => KnownCharacteristic::Ota,
-            id if id == &PUSH_EVENTS => KnownCharacteristic::PushEvents,
-            id if id == &MUG_COLOR => KnownCharacteristic::MugColor,
-            id if id == &LAST_LOCATION => KnownCharacteristic::LastLocation,
-            id if id == &MUG_ID => KnownCharacteristic::MugId,
-            id if id == &DSK => KnownCharacteristic::Dsk,
-            id if id == &UDSK => KnownCharacteristic::Udsk,
-            id if id == &CONTROL_REGISTER_ADDRESS => KnownCharacteristic::ControlRegisterAddress,
-            id if id == &CONTROL_REGISTER_DATA => KnownCharacteristic::ControlRegisterData,
-            id if id == &STATISTICS => KnownCharacteristic::Statistics,
+            id if id.as_u128() == NAME.as_u128() => KnownCharacteristic::Name,
+            id if id.as_u128() == CURRENT_TEMP.as_u128() => KnownCharacteristic::CurrentTemp,
+            id if id.as_u128() == TARGET_TEMP.as_u128() => KnownCharacteristic::TargetTemp,
+            id if id.as_u128() == TEMPERATURE_UNIT.as_u128() => {
+                KnownCharacteristic::TemperatureUnit
+            }
+            id if id.as_u128() == LIQUID_LEVEL.as_u128() => KnownCharacteristic::LiquidLevel,
+            id if id.as_u128() == TIME_DATE_ZONE.as_u128() => KnownCharacteristic::TimeDateZone,
+            id if id.as_u128() == BATTERY.as_u128() => KnownCharacteristic::Battery,
+            id if id.as_u128() == LIQUID_STATE.as_u128() => KnownCharacteristic::LiquidState,
+            id if id.as_u128() == OTA.as_u128() => KnownCharacteristic::Ota,
+            id if id.as_u128() == PUSH_EVENTS.as_u128() => KnownCharacteristic::PushEvents,
+            id if id.as_u128() == MUG_COLOR.as_u128() => KnownCharacteristic::MugColor,
+            id if id.as_u128() == LAST_LOCATION.as_u128() => KnownCharacteristic::LastLocation,
+            id if id.as_u128() == MUG_ID.as_u128() => KnownCharacteristic::MugId,
+            id if id.as_u128() == DSK.as_u128() => KnownCharacteristic::Dsk,
+            id if id.as_u128() == UDSK.as_u128() => KnownCharacteristic::Udsk,
+            id if id.as_u128() == CONTROL_REGISTER_ADDRESS.as_u128() => {
+                KnownCharacteristic::ControlRegisterAddress
+            }
+            id if id.as_u128() == CONTROL_REGISTER_DATA.as_u128() => {
+                KnownCharacteristic::ControlRegisterData
+            }
+            id if id.as_u128() == STATISTICS.as_u128() => KnownCharacteristic::Statistics,
             _ => return None,
         })
     }
 
     /// Get all known characteristics
-    pub fn all() -> &'static [Self] {
+    pub const fn all() -> &'static [Self] {
         &[
             KnownCharacteristic::Name,
             KnownCharacteristic::CurrentTemp,
@@ -359,7 +365,18 @@ impl EmberMug {
 }
 
 impl EmberMug {
-    /// Read data from given characteristic on `uuid`
+    /// Read data from given characteristic with `uuid`
+    pub async fn read_deserialize<T: BinRead + binrw::meta::ReadEndian>(
+        &self,
+        uuid: &uuid::Uuid,
+    ) -> Result<T, ReadError>
+    where
+        T::Args: Default,
+    {
+        T::read(&mut Cursor::new(self.read(uuid).await?)).map_err(Into::into)
+    }
+
+    /// Deserialize data on given characteristic with `uuid`
     pub async fn read(&self, uuid: &uuid::Uuid) -> Result<Vec<u8>, ReadError> {
         self.peripheral
             .read(

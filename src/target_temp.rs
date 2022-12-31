@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Retrieves the target temperature of the mug
     pub async fn get_target_temperature(&self) -> Result<Temperature, ReadError> {
-        Temperature::read(&mut Cursor::new(self.read(&TARGET_TEMP).await?)).map_err(Into::into)
+        self.read_deserialize(&TARGET_TEMP).await
     }
     /// Set the target temperature of the mug
     pub async fn set_target_temperature(

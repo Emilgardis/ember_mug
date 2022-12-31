@@ -2,7 +2,8 @@ use super::*;
 impl EmberMug {
     /// Retrieve the current unit of temperature used by the mug.
     pub async fn get_temperature_unit(&self) -> Result<TemperatureUnit, ReadError> {
-        TemperatureUnit::read(&mut Cursor::new(self.read(&TEMPERATURE_UNIT).await?))
+        self.read_deserialize(&TEMPERATURE_UNIT)
+            .await
             .map_err(Into::into)
     }
     /// Set the current unit of temperature used by the mug.

@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Info about the current firmware running on the mug.
     pub async fn get_ota(&self) -> Result<Ota, ReadError> {
-        Ota::read(&mut Cursor::new(self.read(&OTA).await?)).map_err(Into::into)
+       self.read_deserialize(&OTA).await
     }
 }
 

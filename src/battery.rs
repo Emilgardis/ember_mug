@@ -3,7 +3,7 @@ use super::*;
 impl EmberMug {
     /// Retrieves the battery percentage of the mug and other values.
     pub async fn get_battery(&self) -> Result<Battery, ReadError> {
-        Battery::read(&mut Cursor::new(self.read(&BATTERY).await?)).map_err(Into::into)
+        self.read_deserialize(&BATTERY).await
     }
 }
 

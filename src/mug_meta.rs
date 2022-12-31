@@ -2,9 +2,7 @@ use super::*;
 impl EmberMug {
     /// Retrieves id of the mug
     pub async fn get_mug_meta(&self) -> Result<MugMeta, ReadError> {
-        let b = self.read(&MUG_ID).await?;
-        println!("{}", b.as_slice().escape_ascii());
-        MugMeta::read(&mut Cursor::new(b)).map_err(Into::into)
+        self.read_deserialize(&MUG_ID).await
     }
 }
 
