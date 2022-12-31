@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
+#![cfg_attr(nightly, feature(doc_cfg))]
+#![cfg_attr(nightly, feature(doc_auto_cfg))]
 pub mod btle;
 
 mod battery;

@@ -19,6 +19,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: build docs
         run: cargo doc --no-deps -Zunstable-options -Zrustdoc-scrape-examples -Zrustdoc-map
+        env:
+          RUSTDOCFLAGS: --cfg nightly
+          RUSTFLAGS: --cfg nightly
       - name: move index.html
         run: cp ./docs/index.html ./target/doc/index.html
       - name: Deploy
