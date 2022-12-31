@@ -14,6 +14,7 @@ impl EmberMug {
 }
 
 #[derive(Debug, BinWrite, BinRead)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[bw(little)]
 #[br(little)]
 pub struct TimeDateZone {

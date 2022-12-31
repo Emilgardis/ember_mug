@@ -11,6 +11,7 @@ impl EmberMug {
 }
 
 #[derive(BinRead, BinWrite, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[br(little)]
 #[bw(little)]
 pub struct Color {

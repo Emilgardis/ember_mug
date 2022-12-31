@@ -7,6 +7,7 @@ impl EmberMug {
 }
 
 #[derive(BinRead, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(transparent))]
 #[br(little)]
 pub struct LiquidLevel {
     level: u8,

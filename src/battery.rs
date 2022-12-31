@@ -8,6 +8,7 @@ impl EmberMug {
 }
 
 #[derive(BinRead, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[br(little)]
 pub struct Battery {
     /// Battery percentage (5 - 100. Not scaled to 0 - 255)

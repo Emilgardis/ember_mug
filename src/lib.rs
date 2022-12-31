@@ -1,4 +1,4 @@
-mod btle;
+pub mod btle;
 
 mod battery;
 mod current_temp;
@@ -214,7 +214,10 @@ type Peripheral = <platform::Adapter as btleplug::api::Central>::Peripheral;
 
 impl EmberMug {
     pub async fn find_and_connect() -> Result<EmberMug, ConnectError> {
-        let Some(mug) = btle::get_mugs().await?.into_iter().next() else {
+        use futures::TryStreamExt;
+        // FIXME: pin on stack with `Pin::new_unchecked` or `pin-utils`
+        let mut stream = Box::pin(btle::get_mugs().await?);
+        let Some(mug) = stream.try_next().await? else {
             return Err(ConnectError::NoDevice)
         };
         EmberMug::connect_mug(mug).await
@@ -304,6 +307,7 @@ impl EmberMug {
 }
 
 #[derive(BinRead, BinWrite, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(transparent))]
 #[br(little)]
 #[bw(little)]
 pub struct Temperature {

@@ -43,23 +43,35 @@ pub async fn search_adapter_for_ember(
     Ok(mugs)
 }
 
-pub async fn get_mugs() -> Result<Vec<crate::Peripheral>, SearchError> {
+pub async fn get_mugs() -> Result<
+    impl futures::Stream<Item = Result<crate::Peripheral, SearchError>> + 'static,
+    SearchError,
+> {
     let manager = platform::Manager::new().await?;
     let adapters = manager.adapters().await?;
-    get_mugs_on_adapters(&adapters).await
+    Ok(get_mugs_on_adapters(&adapters).await)
 }
 
 pub async fn get_mugs_on_adapters(
     adapters: &[platform::Adapter],
-) -> Result<Vec<crate::Peripheral>, SearchError> {
+) -> impl futures::Stream<Item = Result<crate::Peripheral, SearchError>> + 'static {
     let mut set = tokio::task::JoinSet::new();
     for adapter in adapters {
         let adapter = adapter.clone();
         set.spawn(async move { search_adapter_for_ember(&adapter, None).await });
     }
-    let mut mugs = vec![];
-    while let Some(p) = set.join_next().await.transpose()?.transpose()? {
-        mugs.extend(p)
-    }
-    Ok(mugs)
+    futures::stream::try_unfold((set, vec![]), |(mut set, mut rem)| async move {
+        if !rem.is_empty() {
+            return Ok(Some((rem.pop().unwrap(), (set, rem))));
+        }
+        if let Some(res) = set.join_next().await {
+            rem = res??;
+            let Some(p) = rem.pop() else {
+                return Ok(None)
+            };
+            Ok(Some((p, (set, rem))))
+        } else {
+            Ok(None)
+        }
+    })
 }

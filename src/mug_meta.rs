@@ -9,6 +9,7 @@ impl EmberMug {
 }
 
 #[derive(BinRead, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[br(little)]
 pub struct MugMeta {
     pub mug_id: [u8; 6],

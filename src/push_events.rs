@@ -57,6 +57,7 @@ impl EmberMug {
 }
 
 #[derive(BinRead, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize), serde(rename_all = "snake_case"))]
 #[br(repr = u8)]
 #[br(little)]
 pub enum PushEvent {
