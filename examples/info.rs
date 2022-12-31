@@ -28,6 +28,7 @@ async fn run() -> Result<(), color_eyre::Report> {
     println!("current_temp: {}", mug.get_current_temperature().await?);
     println!("color: {:?}", mug.get_mug_color().await?);
     println!("name: {:?}", mug.get_name().await?);
+    println!("state: {:?}", mug.get_liquid_state().await?);
     println!(
         "target_temperature: {}",
         mug.get_target_temperature().await?
