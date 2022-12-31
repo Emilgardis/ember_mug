@@ -15,7 +15,9 @@ fn main() {
         .init();
     color_eyre::install().unwrap();
 
-    let native_options = eframe::NativeOptions::default();
+    let native_options = eframe::NativeOptions {
+        ..Default::default()
+    };
     let stop = ember_mug_interface::runtime::start();
     eframe::run_native(
         "Ember Mug",
