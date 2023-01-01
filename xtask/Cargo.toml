@@ -12,3 +12,6 @@ xshell = "0.2.2"
 once_cell = "1.16"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+[dev-dependencies]
+ignore = "0.4"

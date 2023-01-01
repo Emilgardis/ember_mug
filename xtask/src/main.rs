@@ -30,7 +30,7 @@ fn main() -> color_eyre::Result<()> {
 
     match args {
         Args::Release => {
-            let version = pkgid()?.rsplit_once('#').unwrap().1.to_string();
+            let version = pkgid()?.rsplit_once('@').unwrap().1.to_string();
             color_eyre::eyre::ensure!(
                 version.starts_with(|c: char| c.is_ascii_digit()),
                 "version doesn't start with a number"
@@ -202,7 +202,47 @@ mod tests {
     #[test]
     fn assert_pkgid_hashtag() {
         let pkgid = dbg!(pkgid().unwrap());
-        assert!(!pkgid.contains('@'));
-        assert!(pkgid.contains("ember_mug"));
+        assert!(pkgid.contains('#'));
+        assert!(pkgid.contains("ember_mug@"));
+    }
+
+    pub fn walk_dir<'a>(
+        root: &'_ Path,
+        skip: &'static [impl AsRef<std::ffi::OsStr> + Send + Sync + 'a],
+        ext: impl for<'s> Fn(Option<&'s std::ffi::OsStr>) -> bool + Sync + Send + 'static,
+    ) -> impl Iterator<Item = Result<ignore::DirEntry, ignore::Error>> {
+        ignore::WalkBuilder::new(root)
+            .filter_entry(move |e| {
+                if skip
+                    .iter()
+                    .map(|s| -> &std::ffi::OsStr { s.as_ref() })
+                    .any(|dir| e.file_name() == dir)
+                {
+                    return false;
+                } else if e.file_type().map_or(false, |f| f.is_dir()) {
+                    return true;
+                }
+                ext(e.path().extension())
+            })
+            .build()
+    }
+
+    #[test]
+    fn check_newlines() -> Result<(), color_eyre::Report> {
+        for file in walk_dir(get_cargo_workspace(), &[".git", "target"], |_| true) {
+            let file = file?;
+            if !file.file_type().map_or(true, |f| f.is_file()) {
+                continue;
+            }
+            eprintln!("File: {:?}", file.path());
+            assert!(
+                std::fs::read_to_string(file.path())
+                    .unwrap_or_else(|_| String::from("\n"))
+                    .ends_with('\n'),
+                "file {:?} does not end with a newline",
+                file.path().display()
+            );
+        }
+        Ok(())
     }
 }
