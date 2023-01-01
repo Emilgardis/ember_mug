@@ -9,8 +9,6 @@ categories = ["hardware-support"]
 exclude = [".github", "docs"]
 description = "Control and retrieve data from an Ember Ceramic Mug using Bluetooth Low Energy (BLE)"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 binrw = "0.10.0"
 btleplug = "0.10.4"

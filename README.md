@@ -1,4 +1,4 @@
-# ember_mug | Rust crate for controlling and retrieving data from an Ember Ceramic Mug using Bluetooth Low Energy (BLE)"
+# ember_mug | Rust crate for controlling and retrieving data from an Ember Ceramic Mug using Bluetooth Low Energy (BLE)
 
 [![github]](https://github.com/emilgardis/ember_mug)
 
