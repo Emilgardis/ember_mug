@@ -37,44 +37,29 @@ pub(crate) type Peripheral = <btleplug::platform::Adapter as btleplug::api::Cent
 /// An Ember Mug device
 ///
 /// Create an instance with [`EmberMug::find_and_connect`] or [`EmberMug::connect_mug`]
+#[derive(Clone)]
 pub struct EmberMug {
     /// The underlying [`Peripheral`] representing this device
-    peripheral: Peripheral,
+    peripheral: std::sync::Arc<EmberMugInner>,
     /// The set of [`Characteristic`]s for this device
     characteristics: std::collections::BTreeSet<Characteristic>,
-    count: std::sync::Arc<std::sync::atomic::AtomicUsize>,
 }
 
-impl Clone for EmberMug {
-    fn clone(&self) -> Self {
-        let old_count = self
-            .count
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        if old_count > (i32::MAX) as usize {
-            tracing::error!("this should've aborted the process, because of how arc works")
-        }
-        Self {
-            peripheral: self.peripheral.clone(),
-            characteristics: self.characteristics.clone(),
-            count: self.count.clone(),
-        }
+#[derive(Clone)]
+struct EmberMugInner(Peripheral);
+
+impl std::ops::Deref for EmberMugInner {
+    type Target = Peripheral;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl Drop for EmberMug {
+impl Drop for EmberMugInner {
     fn drop(&mut self) {
-        if self
-            .count
-            .fetch_sub(1, std::sync::atomic::Ordering::Release)
-            != 1
-        {
-            return;
-        }
-
-        let peripheral = self.peripheral.clone();
+        let peripheral = self.0.clone();
         tokio::task::spawn(async move {
-            // XXX: Is this correct?
-            std::sync::atomic::fence(std::sync::atomic::Ordering::Acquire);
+            tracing::debug!("disconnecting device");
             peripheral.disconnect().await
         });
     }
@@ -99,8 +84,7 @@ impl EmberMug {
         peripheral.discover_services().await?;
         Ok(Self {
             characteristics: peripheral.characteristics(),
-            peripheral,
-            count: Default::default(),
+            peripheral: std::sync::Arc::new(EmberMugInner(peripheral)),
         })
     }
 }
