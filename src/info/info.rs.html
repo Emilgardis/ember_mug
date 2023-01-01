@@ -41,10 +41,13 @@
 <a href="#41" id="41">41</a>
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
 </pre><pre class="rust"><code><span class="attr">#[tokio::main(flavor = <span class="string">&quot;current_thread&quot;</span>)]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), color_eyre::Report&gt; {
     tracing_subscriber::fmt()
         .with_line_number(<span class="bool-val">true</span>)
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .with_file(<span class="bool-val">true</span>)
         .pretty()
         .init();
@@ -53,35 +56,36 @@
 </span>}
 
 <span class="kw">async fn </span>run() -&gt; <span class="prelude-ty">Result</span>&lt;(), color_eyre::Report&gt; {
-    <span class="kw">let </span>mug = ember_mug::EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>chars: Vec&lt;<span class="kw">_</span>&gt; = mug.get_characteristics().collect();
-    <span class="kw">let </span>known = ember_mug::KnownCharacteristic::all();
-    <span class="kw">for </span>k <span class="kw">in </span>known {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(char) = chars.iter().position(|<span class="kw-2">&amp;</span>c| <span class="kw-2">&amp;</span>c.uuid == k.get()) <span class="kw">else </span>{
+    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+        <span class="kw">let </span>mug = ember_mug::EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>chars: Vec&lt;<span class="kw">_</span>&gt; = mug.get_characteristics().collect();
+        <span class="kw">let </span>known = ember_mug::KnownCharacteristic::all();
+        <span class="kw">for </span>k <span class="kw">in </span>known {
+            <span class="kw">let </span><span class="prelude-val">Some</span>(char) = chars.iter().position(|<span class="kw-2">&amp;</span>c| <span class="kw-2">&amp;</span>c.uuid == k.get()) <span class="kw">else </span>{
             <span class="macro">println!</span>(<span class="string">&quot;couldn&#39;t find {:?}&quot;</span>, k);
             <span class="kw">continue</span>;
         };
-        <span class="kw">let </span>char = chars.remove(char);
-        <span class="macro">println!</span>(<span class="string">&quot;known: {k:?}\n{} cap: {:?}&quot;</span>, char.uuid, char.properties);
+            <span class="kw">let </span>char = chars.remove(char);
+            <span class="macro">println!</span>(<span class="string">&quot;known: {k:?}\n{} cap: {:?}&quot;</span>, char.uuid, char.properties);
+        }
+        <span class="kw">for </span>ch <span class="kw">in </span>chars {
+            <span class="macro">tracing::info!</span>(<span class="question-mark">?</span>ch, <span class="string">&quot;was left&quot;</span>);
+        }
+        <span class="macro">println!</span>(<span class="string">&quot;battery: {:?}&quot;</span>, mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;current_temp: {}&quot;</span>, mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;color: {:?}&quot;</span>, mug.get_mug_color().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;name: {:?}&quot;</span>, mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;state: {:?}&quot;</span>, mug.get_liquid_state().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(
+            <span class="string">&quot;target_temperature: {}&quot;</span>,
+            mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?
+        </span>);
+        <span class="macro">println!</span>(<span class="string">&quot;ota: {:?}&quot;</span>, mug.get_ota().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;tdz: {:?}&quot;</span>, mug.get_time_date_zone().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;meta: {:?}&quot;</span>, mug.get_mug_meta().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;dsk: {:?}&quot;</span>, mug.get_dsk().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;udsk: {:?}&quot;</span>, mug.get_udsk().<span class="kw">await</span><span class="question-mark">?</span>);
     }
-    <span class="kw">for </span>ch <span class="kw">in </span>chars {
-        <span class="macro">tracing::info!</span>(<span class="question-mark">?</span>ch, <span class="string">&quot;was left&quot;</span>);
-    }
-    <span class="macro">println!</span>(<span class="string">&quot;battery: {:?}&quot;</span>, mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;current_temp: {}&quot;</span>, mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;color: {:?}&quot;</span>, mug.get_mug_color().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;name: {:?}&quot;</span>, mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;state: {:?}&quot;</span>, mug.get_liquid_state().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(
-        <span class="string">&quot;target_temperature: {}&quot;</span>,
-        mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?
-    </span>);
-    <span class="macro">println!</span>(<span class="string">&quot;ota: {:?}&quot;</span>, mug.get_ota().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;tdz: {:?}&quot;</span>, mug.get_time_date_zone().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;meta: {:?}&quot;</span>, mug.get_mug_meta().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;dsk: {:?}&quot;</span>, mug.get_dsk().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;udsk: {:?}&quot;</span>, mug.get_udsk().<span class="kw">await</span><span class="question-mark">?</span>);
-
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>

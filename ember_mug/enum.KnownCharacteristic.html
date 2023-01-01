@@ -55,8 +55,7 @@
 </div><section id="variant.Statistics" class="variant"><a href="#variant.Statistics" class="anchor">§</a><h3 class="code-header">Statistics</h3></section><div class="docblock"><p>Statistics</p>
 <p>Capability: NOTIFY</p>
 </div></div><h2 id="implementations" class="small-section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="rustdoc-toggle implementors-toggle" open><summary><section id="impl-KnownCharacteristic" class="impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#141-219">source</a><a href="#impl-KnownCharacteristic" class="anchor">§</a><h3 class="code-header">impl <a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.get" class="method has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#143-165">source</a><h4 class="code-header">pub const fn <a href="#method.get" class="fn">get</a>(&amp;self) -&gt; &amp;'static <a class="struct" href="https://docs.rs/uuid/1.2.2/uuid/struct.Uuid.html" title="struct uuid::Uuid">Uuid</a></h4></section></summary><div class="docblock"><p>Get the UUID for this characteristic</p>
-</div><div class="docblock scraped-example-list"><span></span><h5 id="scraped-examples"><a href="#scraped-examples">Examples found in repository</a><a class="scrape-help" href="../scrape-examples-help.html">?</a></h5><div class="scraped-example " data-locs="[[[5,5],&quot;../src/info/info.rs.html#17&quot;,&quot;line 17&quot;]]"><div class="scraped-example-title">examples/info.rs (<a href="../src/info/info.rs.html#17">line 17</a>)</div><div class="code-wrapper"><div class="example-wrap"><pre class="src-line-numbers"><span>12</span>
-<span>13</span>
+</div><div class="docblock scraped-example-list"><span></span><h5 id="scraped-examples"><a href="#scraped-examples">Examples found in repository</a><a class="scrape-help" href="../scrape-examples-help.html">?</a></h5><div class="scraped-example " data-locs="[[[6,6],&quot;../src/info/info.rs.html#19&quot;,&quot;line 19&quot;]]"><div class="scraped-example-title">examples/info.rs (<a href="../src/info/info.rs.html#19">line 19</a>)</div><div class="code-wrapper"><div class="example-wrap"><pre class="src-line-numbers"><span>13</span>
 <span>14</span>
 <span>15</span>
 <span>16</span>
@@ -87,42 +86,44 @@
 <span>41</span>
 <span>42</span>
 <span>43</span>
+<span>44</span>
+<span>45</span>
 </pre><pre class="rust"><code><button class="expand">&varr;</button><span class="kw">async fn </span>run() -&gt; <span class="prelude-ty">Result</span>&lt;(), color_eyre::Report&gt; {
-    <span class="kw">let </span>mug = ember_mug::EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>chars: Vec&lt;<span class="kw">_</span>&gt; = mug.get_characteristics().collect();
-    <span class="kw">let </span>known = ember_mug::KnownCharacteristic::all();
-    <span class="kw">for </span>k <span class="kw">in </span>known {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(char) = chars.iter().position(|<span class="kw-2">&amp;</span>c| <span class="kw-2">&amp;</span>c.uuid == k.<span class="highlight focus">get</span>()) <span class="kw">else </span>{
+    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+        <span class="kw">let </span>mug = ember_mug::EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>chars: Vec&lt;<span class="kw">_</span>&gt; = mug.get_characteristics().collect();
+        <span class="kw">let </span>known = ember_mug::KnownCharacteristic::all();
+        <span class="kw">for </span>k <span class="kw">in </span>known {
+            <span class="kw">let </span><span class="prelude-val">Some</span>(char) = chars.iter().position(|<span class="kw-2">&amp;</span>c| <span class="kw-2">&amp;</span>c.uuid == k.<span class="highlight focus">get</span>()) <span class="kw">else </span>{
             <span class="macro">println!</span>(<span class="string">&quot;couldn&#39;t find {:?}&quot;</span>, k);
             <span class="kw">continue</span>;
         };
-        <span class="kw">let </span>char = chars.remove(char);
-        <span class="macro">println!</span>(<span class="string">&quot;known: {k:?}\n{} cap: {:?}&quot;</span>, char.uuid, char.properties);
+            <span class="kw">let </span>char = chars.remove(char);
+            <span class="macro">println!</span>(<span class="string">&quot;known: {k:?}\n{} cap: {:?}&quot;</span>, char.uuid, char.properties);
+        }
+        <span class="kw">for </span>ch <span class="kw">in </span>chars {
+            <span class="macro">tracing::info!</span>(<span class="question-mark">?</span>ch, <span class="string">&quot;was left&quot;</span>);
+        }
+        <span class="macro">println!</span>(<span class="string">&quot;battery: {:?}&quot;</span>, mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;current_temp: {}&quot;</span>, mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;color: {:?}&quot;</span>, mug.get_mug_color().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;name: {:?}&quot;</span>, mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;state: {:?}&quot;</span>, mug.get_liquid_state().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(
+            <span class="string">&quot;target_temperature: {}&quot;</span>,
+            mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?
+        </span>);
+        <span class="macro">println!</span>(<span class="string">&quot;ota: {:?}&quot;</span>, mug.get_ota().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;tdz: {:?}&quot;</span>, mug.get_time_date_zone().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;meta: {:?}&quot;</span>, mug.get_mug_meta().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;dsk: {:?}&quot;</span>, mug.get_dsk().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;udsk: {:?}&quot;</span>, mug.get_udsk().<span class="kw">await</span><span class="question-mark">?</span>);
     }
-    <span class="kw">for </span>ch <span class="kw">in </span>chars {
-        <span class="macro">tracing::info!</span>(<span class="question-mark">?</span>ch, <span class="string">&quot;was left&quot;</span>);
-    }
-    <span class="macro">println!</span>(<span class="string">&quot;battery: {:?}&quot;</span>, mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;current_temp: {}&quot;</span>, mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;color: {:?}&quot;</span>, mug.get_mug_color().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;name: {:?}&quot;</span>, mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;state: {:?}&quot;</span>, mug.get_liquid_state().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(
-        <span class="string">&quot;target_temperature: {}&quot;</span>,
-        mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?
-    </span>);
-    <span class="macro">println!</span>(<span class="string">&quot;ota: {:?}&quot;</span>, mug.get_ota().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;tdz: {:?}&quot;</span>, mug.get_time_date_zone().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;meta: {:?}&quot;</span>, mug.get_mug_meta().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;dsk: {:?}&quot;</span>, mug.get_dsk().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;udsk: {:?}&quot;</span>, mug.get_udsk().<span class="kw">await</span><span class="question-mark">?</span>);
-
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
 </div></div></div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.new" class="method has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#168-193">source</a><h4 class="code-header">pub const fn <a href="#method.new" class="fn">new</a>(uuid: &amp;<a class="struct" href="https://docs.rs/uuid/1.2.2/uuid/struct.Uuid.html" title="struct uuid::Uuid">Uuid</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;Self&gt;</h4></section></summary><div class="docblock"><p>Create a new known characteristic from UUID</p>
 </div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.all" class="method has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#197-218">source</a><h4 class="code-header">pub const fn <a href="#method.all" class="fn">all</a>() -&gt; &amp;'static <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">[Self]</a> <a href="#" class="notable-traits" data-ty="&amp;&#39;static [Self]">ⓘ</a></h4></section></summary><div class="docblock"><p>Get all known characteristics</p>
-</div><div class="docblock scraped-example-list"><span></span><h5 id="scraped-examples-1"><a href="#scraped-examples-1">Examples found in repository</a><a class="scrape-help" href="../scrape-examples-help.html">?</a></h5><div class="scraped-example " data-locs="[[[3,3],&quot;../src/info/info.rs.html#15&quot;,&quot;line 15&quot;]]"><div class="scraped-example-title">examples/info.rs (<a href="../src/info/info.rs.html#15">line 15</a>)</div><div class="code-wrapper"><div class="example-wrap"><pre class="src-line-numbers"><span>12</span>
-<span>13</span>
+</div><div class="docblock scraped-example-list"><span></span><h5 id="scraped-examples-1"><a href="#scraped-examples-1">Examples found in repository</a><a class="scrape-help" href="../scrape-examples-help.html">?</a></h5><div class="scraped-example " data-locs="[[[4,4],&quot;../src/info/info.rs.html#17&quot;,&quot;line 17&quot;]]"><div class="scraped-example-title">examples/info.rs (<a href="../src/info/info.rs.html#17">line 17</a>)</div><div class="code-wrapper"><div class="example-wrap"><pre class="src-line-numbers"><span>13</span>
 <span>14</span>
 <span>15</span>
 <span>16</span>
@@ -153,36 +154,39 @@
 <span>41</span>
 <span>42</span>
 <span>43</span>
+<span>44</span>
+<span>45</span>
 </pre><pre class="rust"><code><button class="expand">&varr;</button><span class="kw">async fn </span>run() -&gt; <span class="prelude-ty">Result</span>&lt;(), color_eyre::Report&gt; {
-    <span class="kw">let </span>mug = ember_mug::EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>chars: Vec&lt;<span class="kw">_</span>&gt; = mug.get_characteristics().collect();
-    <span class="kw">let </span>known = <span class="highlight focus">ember_mug::KnownCharacteristic::all</span>();
-    <span class="kw">for </span>k <span class="kw">in </span>known {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(char) = chars.iter().position(|<span class="kw-2">&amp;</span>c| <span class="kw-2">&amp;</span>c.uuid == k.get()) <span class="kw">else </span>{
+    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+        <span class="kw">let </span>mug = ember_mug::EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>chars: Vec&lt;<span class="kw">_</span>&gt; = mug.get_characteristics().collect();
+        <span class="kw">let </span>known = <span class="highlight focus">ember_mug::KnownCharacteristic::all</span>();
+        <span class="kw">for </span>k <span class="kw">in </span>known {
+            <span class="kw">let </span><span class="prelude-val">Some</span>(char) = chars.iter().position(|<span class="kw-2">&amp;</span>c| <span class="kw-2">&amp;</span>c.uuid == k.get()) <span class="kw">else </span>{
             <span class="macro">println!</span>(<span class="string">&quot;couldn&#39;t find {:?}&quot;</span>, k);
             <span class="kw">continue</span>;
         };
-        <span class="kw">let </span>char = chars.remove(char);
-        <span class="macro">println!</span>(<span class="string">&quot;known: {k:?}\n{} cap: {:?}&quot;</span>, char.uuid, char.properties);
+            <span class="kw">let </span>char = chars.remove(char);
+            <span class="macro">println!</span>(<span class="string">&quot;known: {k:?}\n{} cap: {:?}&quot;</span>, char.uuid, char.properties);
+        }
+        <span class="kw">for </span>ch <span class="kw">in </span>chars {
+            <span class="macro">tracing::info!</span>(<span class="question-mark">?</span>ch, <span class="string">&quot;was left&quot;</span>);
+        }
+        <span class="macro">println!</span>(<span class="string">&quot;battery: {:?}&quot;</span>, mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;current_temp: {}&quot;</span>, mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;color: {:?}&quot;</span>, mug.get_mug_color().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;name: {:?}&quot;</span>, mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;state: {:?}&quot;</span>, mug.get_liquid_state().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(
+            <span class="string">&quot;target_temperature: {}&quot;</span>,
+            mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?
+        </span>);
+        <span class="macro">println!</span>(<span class="string">&quot;ota: {:?}&quot;</span>, mug.get_ota().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;tdz: {:?}&quot;</span>, mug.get_time_date_zone().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;meta: {:?}&quot;</span>, mug.get_mug_meta().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;dsk: {:?}&quot;</span>, mug.get_dsk().<span class="kw">await</span><span class="question-mark">?</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;udsk: {:?}&quot;</span>, mug.get_udsk().<span class="kw">await</span><span class="question-mark">?</span>);
     }
-    <span class="kw">for </span>ch <span class="kw">in </span>chars {
-        <span class="macro">tracing::info!</span>(<span class="question-mark">?</span>ch, <span class="string">&quot;was left&quot;</span>);
-    }
-    <span class="macro">println!</span>(<span class="string">&quot;battery: {:?}&quot;</span>, mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;current_temp: {}&quot;</span>, mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;color: {:?}&quot;</span>, mug.get_mug_color().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;name: {:?}&quot;</span>, mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;state: {:?}&quot;</span>, mug.get_liquid_state().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(
-        <span class="string">&quot;target_temperature: {}&quot;</span>,
-        mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?
-    </span>);
-    <span class="macro">println!</span>(<span class="string">&quot;ota: {:?}&quot;</span>, mug.get_ota().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;tdz: {:?}&quot;</span>, mug.get_time_date_zone().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;meta: {:?}&quot;</span>, mug.get_mug_meta().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;dsk: {:?}&quot;</span>, mug.get_dsk().<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;udsk: {:?}&quot;</span>, mug.get_udsk().<span class="kw">await</span><span class="question-mark">?</span>);
-
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
 </div></div></div></details></div></details></div><h2 id="trait-implementations" class="small-section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="rustdoc-toggle implementors-toggle" open><summary><section id="impl-Clone-for-KnownCharacteristic" class="impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#65">source</a><a href="#impl-Clone-for-KnownCharacteristic" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.clone" class="method trait-impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#65">source</a><a href="#method.clone" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone" class="fn">clone</a>(&amp;self) -&gt; <a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a></h4></section></summary><div class='docblock'>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.clone_from" class="method trait-impl has-srclink"><span class="rightside"><span class="since" title="Stable since Rust version 1.0.0">1.0.0</span> · <a class="srclink" href="https://doc.rust-lang.org/nightly/src/core/clone.rs.html#132-134">source</a></span><a href="#method.clone_from" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from" class="fn">clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</h4></section></summary><div class='docblock'>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></div></details></div></details><details class="rustdoc-toggle implementors-toggle" open><summary><section id="impl-Debug-for-KnownCharacteristic" class="impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#65">source</a><a href="#impl-Debug-for-KnownCharacteristic" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.fmt" class="method trait-impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#65">source</a><a href="#method.fmt" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt" class="fn">fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>&lt;'_&gt;) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></h4></section></summary><div class='docblock'>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></div></details></div></details><details class="rustdoc-toggle implementors-toggle" open><summary><section id="impl-PartialEq%3CKnownCharacteristic%3E-for-KnownCharacteristic" class="impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#65">source</a><a href="#impl-PartialEq%3CKnownCharacteristic%3E-for-KnownCharacteristic" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a>&lt;<a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a>&gt; for <a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.eq" class="method trait-impl has-srclink"><a class="srclink rightside" href="../src/ember_mug/lib.rs.html#65">source</a><a href="#method.eq" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq" class="fn">eq</a>(&amp;self, other: &amp;<a class="enum" href="enum.KnownCharacteristic.html" title="enum ember_mug::KnownCharacteristic">KnownCharacteristic</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></h4></section></summary><div class='docblock'>This method tests for <code>self</code> and <code>other</code> values to be equal, and is used
