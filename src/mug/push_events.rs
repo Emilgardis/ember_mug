@@ -1,3 +1,5 @@
+use crate::characteristics::PUSH_EVENTS;
+
 use super::*;
 impl EmberMug {
     /// Events sent by the mug for the application to register to.
@@ -88,7 +90,7 @@ impl PushEvent {
     ///
     /// [`RefreshBatteryLevel`]: PushEvent::RefreshBatteryLevel
     #[must_use]
-    pub fn is_refresh_battery_level(&self) -> bool {
+    pub const fn is_refresh_battery_level(&self) -> bool {
         matches!(self, Self::RefreshBatteryLevel)
     }
 
@@ -96,7 +98,7 @@ impl PushEvent {
     ///
     /// [`Charging`]: PushEvent::Charging
     #[must_use]
-    pub fn is_charging(&self) -> bool {
+    pub const fn is_charging(&self) -> bool {
         matches!(self, Self::Charging)
     }
 
@@ -104,7 +106,7 @@ impl PushEvent {
     ///
     /// [`NotCharging`]: PushEvent::NotCharging
     #[must_use]
-    pub fn is_not_charging(&self) -> bool {
+    pub const fn is_not_charging(&self) -> bool {
         matches!(self, Self::NotCharging)
     }
 
@@ -112,7 +114,7 @@ impl PushEvent {
     ///
     /// [`RefreshTargetTemperature`]: PushEvent::RefreshTargetTemperature
     #[must_use]
-    pub fn is_refresh_target_temperature(&self) -> bool {
+    pub const fn is_refresh_target_temperature(&self) -> bool {
         matches!(self, Self::RefreshTargetTemperature)
     }
 
@@ -120,7 +122,7 @@ impl PushEvent {
     ///
     /// [`RefreshDrinkTemperature`]: PushEvent::RefreshDrinkTemperature
     #[must_use]
-    pub fn is_refresh_drink_temperature(&self) -> bool {
+    pub const fn is_refresh_drink_temperature(&self) -> bool {
         matches!(self, Self::RefreshDrinkTemperature)
     }
 
@@ -128,7 +130,7 @@ impl PushEvent {
     ///
     /// [`AuthInfoNotFound`]: PushEvent::AuthInfoNotFound
     #[must_use]
-    pub fn is_auth_info_not_found(&self) -> bool {
+    pub const fn is_auth_info_not_found(&self) -> bool {
         matches!(self, Self::AuthInfoNotFound)
     }
 
@@ -136,7 +138,7 @@ impl PushEvent {
     ///
     /// [`RefreshLiquidLevel`]: PushEvent::RefreshLiquidLevel
     #[must_use]
-    pub fn is_refresh_liquid_level(&self) -> bool {
+    pub const fn is_refresh_liquid_level(&self) -> bool {
         matches!(self, Self::RefreshLiquidLevel)
     }
 
@@ -144,7 +146,7 @@ impl PushEvent {
     ///
     /// [`RefreshLiquidState`]: PushEvent::RefreshLiquidState
     #[must_use]
-    pub fn is_refresh_liquid_state(&self) -> bool {
+    pub const fn is_refresh_liquid_state(&self) -> bool {
         matches!(self, Self::RefreshLiquidState)
     }
 
@@ -152,7 +154,7 @@ impl PushEvent {
     ///
     /// [`BatteryVoltageState`]: PushEvent::BatteryVoltageState
     #[must_use]
-    pub fn is_battery_voltage_state(&self) -> bool {
+    pub const fn is_battery_voltage_state(&self) -> bool {
         matches!(self, Self::BatteryVoltageState)
     }
 }

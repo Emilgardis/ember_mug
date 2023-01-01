@@ -36,3 +36,9 @@ opt-level = 2
 [[example]]
 name = "example"
 doc-scrape-examples = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustc-args = ["--cfg", "nightly"]
+rustdoc-args = ["--cfg", "nightly"]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]

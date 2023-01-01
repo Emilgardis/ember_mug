@@ -2,11 +2,16 @@ use super::*;
 impl EmberMug {
     /// Retreives the name of the mug.
     pub async fn get_name(&self) -> Result<String, ReadError> {
-        String::from_utf8(self.read(&NAME).await?).map_err(Into::into)
+        String::from_utf8(self.read(&crate::characteristics::NAME).await?).map_err(Into::into)
     }
 
     /// Sets the name of the mug.
     pub async fn set_name(&self, name: &str) -> Result<(), WriteError> {
+        #[derive(BinWrite)]
+        #[bw(little)]
+        struct Name<'a> {
+            name: &'a [u8],
+        }
         if name.is_empty() || name.len() > 14 {
             // FIXME: This might be 16
             return Err(WriteError::InvalidFormat(
@@ -30,13 +35,8 @@ impl EmberMug {
             ));
         }
 
-        #[derive(BinWrite)]
-        #[bw(little)]
-        struct Name<'a> {
-            name: &'a [u8],
-        }
         self.command(
-            &NAME,
+            &crate::characteristics::NAME,
             &Name {
                 name: name.as_bytes(),
             },

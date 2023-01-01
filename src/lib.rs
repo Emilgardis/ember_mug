@@ -2,40 +2,12 @@
 #![warn(missing_docs)]
 #![cfg_attr(nightly, feature(doc_cfg))]
 #![cfg_attr(nightly, feature(doc_auto_cfg))]
+#![warn(clippy::dbg_macro)]
 pub mod btle;
 
-mod battery;
-mod current_temp;
-mod dsk;
-mod last_location;
-mod liquid_level;
-mod liquid_state;
-mod mug_color;
-mod mug_meta;
-mod name;
-mod ota;
-mod push_events;
-mod target_temp;
-mod temperature_unit;
-mod time_date_zone;
+pub mod mug;
 
-pub use battery::Battery;
-pub use liquid_level::LiquidLevel;
-pub use liquid_state::LiquidState;
-pub use mug_color::Color;
-pub use mug_meta::MugMeta;
-pub use ota::Ota;
-pub use push_events::PushEvent;
-pub use temperature_unit::TemperatureUnit;
-pub use time_date_zone::TimeDateZone;
-
-use binrw::{BinRead, BinWrite};
-use btleplug::{
-    api::{Characteristic, Peripheral as _},
-    platform,
-};
-
-use std::io::Cursor;
+pub use mug::EmberMug;
 
 /// Assigned Bluetooth company identifier for `Ember Technologies, Inc.`
 pub static EMBER_ASSIGNED_NUMBER: u16 = 0x03C1;
@@ -169,93 +141,81 @@ pub enum KnownCharacteristic {
 impl KnownCharacteristic {
     /// Get the UUID for this characteristic
     pub const fn get(&self) -> &'static uuid::Uuid {
+        use characteristics::*;
         match self {
-            KnownCharacteristic::Name => &NAME,
-            KnownCharacteristic::CurrentTemp => &CURRENT_TEMP,
-            KnownCharacteristic::TargetTemp => &TARGET_TEMP,
-            KnownCharacteristic::TemperatureUnit => &TEMPERATURE_UNIT,
-            KnownCharacteristic::LiquidLevel => &LIQUID_LEVEL,
-            KnownCharacteristic::TimeDateZone => &TIME_DATE_ZONE,
-            KnownCharacteristic::Battery => &BATTERY,
-            KnownCharacteristic::LiquidState => &LIQUID_STATE,
-            KnownCharacteristic::Ota => &OTA,
-            KnownCharacteristic::PushEvents => &PUSH_EVENTS,
-            KnownCharacteristic::MugColor => &MUG_COLOR,
-            KnownCharacteristic::LastLocation => &LAST_LOCATION,
-            KnownCharacteristic::MugId => &MUG_ID,
-            KnownCharacteristic::Dsk => &DSK,
-            KnownCharacteristic::Udsk => &UDSK,
-            KnownCharacteristic::ControlRegisterAddress => &CONTROL_REGISTER_ADDRESS,
-            KnownCharacteristic::ControlRegisterData => &CONTROL_REGISTER_DATA,
-            KnownCharacteristic::Statistics => &STATISTICS,
+            Self::Name => &NAME,
+            Self::CurrentTemp => &CURRENT_TEMP,
+            Self::TargetTemp => &TARGET_TEMP,
+            Self::TemperatureUnit => &TEMPERATURE_UNIT,
+            Self::LiquidLevel => &LIQUID_LEVEL,
+            Self::TimeDateZone => &TIME_DATE_ZONE,
+            Self::Battery => &BATTERY,
+            Self::LiquidState => &LIQUID_STATE,
+            Self::Ota => &OTA,
+            Self::PushEvents => &PUSH_EVENTS,
+            Self::MugColor => &MUG_COLOR,
+            Self::LastLocation => &LAST_LOCATION,
+            Self::MugId => &MUG_ID,
+            Self::Dsk => &DSK,
+            Self::Udsk => &UDSK,
+            Self::ControlRegisterAddress => &CONTROL_REGISTER_ADDRESS,
+            Self::ControlRegisterData => &CONTROL_REGISTER_DATA,
+            Self::Statistics => &STATISTICS,
         }
     }
 
     /// Create a new known characteristic from UUID
     pub const fn new(uuid: &uuid::Uuid) -> Option<Self> {
+        use characteristics::*;
         Some(match uuid {
-            id if id.as_u128() == NAME.as_u128() => KnownCharacteristic::Name,
-            id if id.as_u128() == CURRENT_TEMP.as_u128() => KnownCharacteristic::CurrentTemp,
-            id if id.as_u128() == TARGET_TEMP.as_u128() => KnownCharacteristic::TargetTemp,
-            id if id.as_u128() == TEMPERATURE_UNIT.as_u128() => {
-                KnownCharacteristic::TemperatureUnit
-            }
-            id if id.as_u128() == LIQUID_LEVEL.as_u128() => KnownCharacteristic::LiquidLevel,
-            id if id.as_u128() == TIME_DATE_ZONE.as_u128() => KnownCharacteristic::TimeDateZone,
-            id if id.as_u128() == BATTERY.as_u128() => KnownCharacteristic::Battery,
-            id if id.as_u128() == LIQUID_STATE.as_u128() => KnownCharacteristic::LiquidState,
-            id if id.as_u128() == OTA.as_u128() => KnownCharacteristic::Ota,
-            id if id.as_u128() == PUSH_EVENTS.as_u128() => KnownCharacteristic::PushEvents,
-            id if id.as_u128() == MUG_COLOR.as_u128() => KnownCharacteristic::MugColor,
-            id if id.as_u128() == LAST_LOCATION.as_u128() => KnownCharacteristic::LastLocation,
-            id if id.as_u128() == MUG_ID.as_u128() => KnownCharacteristic::MugId,
-            id if id.as_u128() == DSK.as_u128() => KnownCharacteristic::Dsk,
-            id if id.as_u128() == UDSK.as_u128() => KnownCharacteristic::Udsk,
+            id if id.as_u128() == NAME.as_u128() => Self::Name,
+            id if id.as_u128() == CURRENT_TEMP.as_u128() => Self::CurrentTemp,
+            id if id.as_u128() == TARGET_TEMP.as_u128() => Self::TargetTemp,
+            id if id.as_u128() == TEMPERATURE_UNIT.as_u128() => Self::TemperatureUnit,
+            id if id.as_u128() == LIQUID_LEVEL.as_u128() => Self::LiquidLevel,
+            id if id.as_u128() == TIME_DATE_ZONE.as_u128() => Self::TimeDateZone,
+            id if id.as_u128() == BATTERY.as_u128() => Self::Battery,
+            id if id.as_u128() == LIQUID_STATE.as_u128() => Self::LiquidState,
+            id if id.as_u128() == OTA.as_u128() => Self::Ota,
+            id if id.as_u128() == PUSH_EVENTS.as_u128() => Self::PushEvents,
+            id if id.as_u128() == MUG_COLOR.as_u128() => Self::MugColor,
+            id if id.as_u128() == LAST_LOCATION.as_u128() => Self::LastLocation,
+            id if id.as_u128() == MUG_ID.as_u128() => Self::MugId,
+            id if id.as_u128() == DSK.as_u128() => Self::Dsk,
+            id if id.as_u128() == UDSK.as_u128() => Self::Udsk,
             id if id.as_u128() == CONTROL_REGISTER_ADDRESS.as_u128() => {
-                KnownCharacteristic::ControlRegisterAddress
+                Self::ControlRegisterAddress
             }
-            id if id.as_u128() == CONTROL_REGISTER_DATA.as_u128() => {
-                KnownCharacteristic::ControlRegisterData
-            }
-            id if id.as_u128() == STATISTICS.as_u128() => KnownCharacteristic::Statistics,
+            id if id.as_u128() == CONTROL_REGISTER_DATA.as_u128() => Self::ControlRegisterData,
+            id if id.as_u128() == STATISTICS.as_u128() => Self::Statistics,
             _ => return None,
         })
     }
 
     /// Get all known characteristics
+    #[must_use]
     pub const fn all() -> &'static [Self] {
         &[
-            KnownCharacteristic::Name,
-            KnownCharacteristic::CurrentTemp,
-            KnownCharacteristic::TargetTemp,
-            KnownCharacteristic::TemperatureUnit,
-            KnownCharacteristic::LiquidLevel,
-            KnownCharacteristic::TimeDateZone,
-            KnownCharacteristic::Battery,
-            KnownCharacteristic::LiquidState,
-            KnownCharacteristic::Ota,
-            KnownCharacteristic::PushEvents,
-            KnownCharacteristic::MugColor,
-            KnownCharacteristic::LastLocation,
-            KnownCharacteristic::MugId,
-            KnownCharacteristic::Dsk,
-            KnownCharacteristic::Udsk,
-            KnownCharacteristic::ControlRegisterAddress,
-            KnownCharacteristic::ControlRegisterData,
-            KnownCharacteristic::Statistics,
+            Self::Name,
+            Self::CurrentTemp,
+            Self::TargetTemp,
+            Self::TemperatureUnit,
+            Self::LiquidLevel,
+            Self::TimeDateZone,
+            Self::Battery,
+            Self::LiquidState,
+            Self::Ota,
+            Self::PushEvents,
+            Self::MugColor,
+            Self::LastLocation,
+            Self::MugId,
+            Self::Dsk,
+            Self::Udsk,
+            Self::ControlRegisterAddress,
+            Self::ControlRegisterData,
+            Self::Statistics,
         ]
     }
-}
-
-use characteristics::*;
-
-/// An Ember Mug device
-#[derive(Clone)]
-pub struct EmberMug {
-    /// The underlying [`Peripheral`] representing this device
-    peripheral: Peripheral,
-    /// The set of [`Characteristic`]s for this device
-    characteristics: std::collections::BTreeSet<Characteristic>,
 }
 
 /// Errors when trying to connect to an Ember Mug
@@ -315,155 +275,4 @@ pub enum WriteError {
     /// Data to be written was invalid
     #[error("data is invalid: {0}")]
     InvalidFormat(&'static str),
-}
-
-type Peripheral = <platform::Adapter as btleplug::api::Central>::Peripheral;
-
-impl EmberMug {
-    /// Find and connect to the first available Ember Mug
-    pub async fn find_and_connect() -> Result<EmberMug, ConnectError> {
-        use futures::TryStreamExt;
-        // FIXME: pin on stack with `Pin::new_unchecked` or `pin-utils`
-        let mut stream = Box::pin(btle::get_mugs().await?);
-        let Some(mug) = stream.try_next().await? else {
-            return Err(ConnectError::NoDevice)
-        };
-        EmberMug::connect_mug(mug).await
-    }
-
-    /// Connect to specific Ember Mug
-    pub async fn connect_mug(peripheral: Peripheral) -> Result<EmberMug, ConnectError> {
-        tracing::debug!(peripheral.address = ?peripheral.address(), peripheral.id = ?peripheral.id(), "connecting to mug");
-        peripheral.connect().await?;
-        peripheral.discover_services().await?;
-        Ok(EmberMug {
-            characteristics: peripheral.characteristics(),
-            peripheral,
-        })
-    }
-}
-
-impl EmberMug {
-    /// Get characteristic on [`EMBER_MUG_SERVICE_UUID`] with given UUID
-    pub fn get_characteristic(&self, uuid: &uuid::Uuid) -> Option<&Characteristic> {
-        self.get_characteristic_on_service(uuid, &EMBER_MUG_SERVICE_UUID)
-    }
-
-    /// Get all characteristics
-    pub fn get_characteristics(&self) -> impl Iterator<Item = &Characteristic> {
-        self.characteristics.iter()
-    }
-
-    /// Get characteristic on given service UUID with given UUID
-    pub fn get_characteristic_on_service(
-        &self,
-        uuid: &uuid::Uuid,
-        service_uuid: &uuid::Uuid,
-    ) -> Option<&Characteristic> {
-        self.characteristics
-            .iter()
-            .find(|&c| &c.uuid == uuid && &c.service_uuid == service_uuid)
-    }
-}
-
-impl EmberMug {
-    /// Read data from given characteristic with `uuid`
-    pub async fn read_deserialize<T: BinRead + binrw::meta::ReadEndian>(
-        &self,
-        uuid: &uuid::Uuid,
-    ) -> Result<T, ReadError>
-    where
-        T::Args: Default,
-    {
-        T::read(&mut Cursor::new(self.read(uuid).await?)).map_err(Into::into)
-    }
-
-    /// Deserialize data on given characteristic with `uuid`
-    pub async fn read(&self, uuid: &uuid::Uuid) -> Result<Vec<u8>, ReadError> {
-        self.peripheral
-            .read(
-                self.get_characteristic(uuid)
-                    .ok_or(ReadError::NoSuchCharacteristic)?,
-            )
-            .await
-            .map_err(Into::into)
-    }
-
-    /// Write data to given characteristic on `uuid`
-    pub async fn write<D>(
-        &self,
-        write: btleplug::api::WriteType,
-        uuid: &uuid::Uuid,
-        data: &D,
-    ) -> Result<(), WriteError>
-    where
-        D: BinWrite + binrw::meta::WriteEndian,
-        <D as BinWrite>::Args: Default,
-    {
-        let mut buf = Cursor::new(vec![]);
-        data.write(&mut buf)?;
-        self.peripheral
-            .write(
-                self.get_characteristic(uuid)
-                    .ok_or(WriteError::NoSuchCharacteristic)?,
-                buf.get_ref(),
-                write,
-            )
-            .await
-            .map_err(Into::into)
-    }
-
-    /// Send command to given characteristic on `uuid`
-    pub async fn command<D>(&self, uuid: &uuid::Uuid, data: &D) -> Result<(), WriteError>
-    where
-        D: BinWrite + binrw::meta::WriteEndian,
-        <D as BinWrite>::Args: Default,
-    {
-        self.write(btleplug::api::WriteType::WithoutResponse, uuid, data)
-            .await
-    }
-
-    /// Send request to given characteristic on `uuid`
-    pub async fn request<D>(&self, uuid: &uuid::Uuid, data: &D) -> Result<(), WriteError>
-    where
-        D: BinWrite + binrw::meta::WriteEndian,
-        <D as BinWrite>::Args: Default,
-    {
-        self.write(btleplug::api::WriteType::WithResponse, uuid, data)
-            .await
-    }
-}
-
-#[derive(BinRead, BinWrite, Debug)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Deserialize, serde::Serialize),
-    serde(transparent)
-)]
-#[br(little)]
-#[bw(little)]
-/// Temperature in a certain unit
-pub struct Temperature {
-    /// The temperature in integer value, use [`Temperature::to_degree`] for a value in degrees
-    pub temperature: u16,
-}
-
-impl Temperature {
-    /// Convert value to degree
-    pub fn to_degree(&self) -> f32 {
-        f32::from(self.temperature) * 0.01
-    }
-
-    /// Convert given degree to a temperature
-    pub fn from_degree(deg: f32) -> Self {
-        Self {
-            temperature: (deg * 100.0) as u16,
-        }
-    }
-}
-
-impl std::fmt::Display for Temperature {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:>1}°", self.to_degree())
-    }
 }

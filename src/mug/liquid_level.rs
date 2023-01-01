@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Retrieves the level of liquid present in the cup
     pub async fn get_liquid_level(&self) -> Result<LiquidLevel, ReadError> {
-        self.read_deserialize(&LIQUID_LEVEL).await
+        self.read_deserialize(&crate::characteristics::LIQUID_LEVEL).await
     }
 }
 
@@ -25,12 +25,12 @@ pub struct LiquidLevel {
 
 impl LiquidLevel {
     /// Mug is empty
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.level == 0
     }
 
     /// Mug has liquid
-    pub fn has_liquid(&self) -> bool {
+    pub const fn has_liquid(&self) -> bool {
         self.level != 0
     }
 }

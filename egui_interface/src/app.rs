@@ -19,9 +19,9 @@ pub struct Mug {
 pub struct MugData {
     pub target_temp: f32,
     pub current_temp: f32,
-    pub temp_unit: ember_mug::TemperatureUnit,
-    pub state: ember_mug::LiquidState,
-    pub battery: ember_mug::Battery,
+    pub temp_unit: ember_mug::mug::TemperatureUnit,
+    pub state: ember_mug::mug::LiquidState,
+    pub battery: ember_mug::mug::Battery,
 }
 
 impl EmberMugApp {

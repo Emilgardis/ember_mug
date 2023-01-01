@@ -1,45 +1,45 @@
 #[derive(Debug)]
 pub enum PushEvent {
-    RefreshBatteryLevel(ember_mug::Battery),
+    RefreshBatteryLevel(ember_mug::mug::Battery),
     Charging(bool),
     NotCharging(bool),
-    RefreshTargetTemperature(ember_mug::Temperature),
-    RefreshDrinkTemperature(ember_mug::Temperature),
+    RefreshTargetTemperature(ember_mug::mug::Temperature),
+    RefreshDrinkTemperature(ember_mug::mug::Temperature),
     AuthInfoNotFound(),
-    RefreshLiquidLevel(ember_mug::LiquidLevel),
-    RefreshLiquidState(ember_mug::LiquidState),
-    BatteryVoltageState(ember_mug::Battery),
+    RefreshLiquidLevel(ember_mug::mug::LiquidLevel),
+    RefreshLiquidState(ember_mug::mug::LiquidState),
+    BatteryVoltageState(ember_mug::mug::Battery),
 }
 impl PushEvent {
     pub(crate) async fn new(
-        mug: &ember_mug::EmberMug,
-        event: ember_mug::PushEvent,
+        mug: &ember_mug::mug::EmberMug,
+        event: ember_mug::mug::PushEvent,
     ) -> Result<Self, ember_mug::ReadError> {
         match event {
-            ember_mug::PushEvent::RefreshBatteryLevel => {
+            ember_mug::mug::PushEvent::RefreshBatteryLevel => {
                 let v = mug.get_battery().await?;
                 Ok(Self::RefreshBatteryLevel(v))
             }
-            ember_mug::PushEvent::Charging => Ok(Self::Charging(true)),
-            ember_mug::PushEvent::NotCharging => Ok(Self::NotCharging(false)),
-            ember_mug::PushEvent::RefreshTargetTemperature => {
+            ember_mug::mug::PushEvent::Charging => Ok(Self::Charging(true)),
+            ember_mug::mug::PushEvent::NotCharging => Ok(Self::NotCharging(false)),
+            ember_mug::mug::PushEvent::RefreshTargetTemperature => {
                 let v = mug.get_target_temperature().await?;
                 Ok(Self::RefreshTargetTemperature(v))
             }
-            ember_mug::PushEvent::RefreshDrinkTemperature => {
+            ember_mug::mug::PushEvent::RefreshDrinkTemperature => {
                 let v = mug.get_current_temperature().await?;
                 Ok(Self::RefreshDrinkTemperature(v))
             }
-            ember_mug::PushEvent::AuthInfoNotFound => Ok(Self::AuthInfoNotFound()),
-            ember_mug::PushEvent::RefreshLiquidLevel => {
+            ember_mug::mug::PushEvent::AuthInfoNotFound => Ok(Self::AuthInfoNotFound()),
+            ember_mug::mug::PushEvent::RefreshLiquidLevel => {
                 let v = mug.get_liquid_level().await?;
                 Ok(Self::RefreshLiquidLevel(v))
             }
-            ember_mug::PushEvent::RefreshLiquidState => {
+            ember_mug::mug::PushEvent::RefreshLiquidState => {
                 let v = mug.get_liquid_state().await?;
                 Ok(Self::RefreshLiquidState(v))
             }
-            ember_mug::PushEvent::BatteryVoltageState => {
+            ember_mug::mug::PushEvent::BatteryVoltageState => {
                 let v = mug.get_battery().await?;
                 Ok(Self::BatteryVoltageState(v))
             }

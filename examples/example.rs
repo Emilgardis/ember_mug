@@ -1,4 +1,4 @@
-use ember_mug::{EmberMug, Temperature};
+use ember_mug::{mug::Temperature, EmberMug};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

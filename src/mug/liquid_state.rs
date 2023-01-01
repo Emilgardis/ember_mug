@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// The current state of the mug
     pub async fn get_liquid_state(&self) -> Result<LiquidState, ReadError> {
-        self.read_deserialize(&LIQUID_STATE).await
+        self.read_deserialize(&crate::characteristics::LIQUID_STATE).await
     }
 }
 
@@ -37,14 +37,14 @@ pub enum LiquidState {
 impl std::fmt::Display for LiquidState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LiquidState::Unknown => f.write_str("Unknown"),
-            LiquidState::Empty => f.write_str("Empty"),
-            LiquidState::Filling => f.write_str("Filling"),
-            LiquidState::ColdNoTempControl => f.write_str("Cold (No control)"),
-            LiquidState::Cooling => f.write_str("Cooling"),
-            LiquidState::Heating => f.write_str("Heating"),
-            LiquidState::TargetTemperature => f.write_str("Perfect"),
-            LiquidState::WarmNoTempControl => f.write_str("Warm (No control)"),
+            Self::Unknown => f.write_str("Unknown"),
+            Self::Empty => f.write_str("Empty"),
+            Self::Filling => f.write_str("Filling"),
+            Self::ColdNoTempControl => f.write_str("Cold (No control)"),
+            Self::Cooling => f.write_str("Cooling"),
+            Self::Heating => f.write_str("Heating"),
+            Self::TargetTemperature => f.write_str("Perfect"),
+            Self::WarmNoTempControl => f.write_str("Warm (No control)"),
         }
     }
 }
@@ -54,7 +54,7 @@ impl LiquidState {
     ///
     /// [`Unknown`]: LiquidState::Unknown
     #[must_use]
-    pub fn is_unknown(&self) -> bool {
+    pub const fn is_unknown(&self) -> bool {
         matches!(self, Self::Unknown)
     }
 
@@ -62,7 +62,7 @@ impl LiquidState {
     ///
     /// [`Empty`]: LiquidState::Empty
     #[must_use]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
     }
 
@@ -70,7 +70,7 @@ impl LiquidState {
     ///
     /// [`Filling`]: LiquidState::Filling
     #[must_use]
-    pub fn is_filling(&self) -> bool {
+    pub const fn is_filling(&self) -> bool {
         matches!(self, Self::Filling)
     }
 
@@ -78,7 +78,7 @@ impl LiquidState {
     ///
     /// [`ColdNoTempControl`]: LiquidState::ColdNoTempControl
     #[must_use]
-    pub fn is_cold_no_temp_control(&self) -> bool {
+    pub const fn is_cold_no_temp_control(&self) -> bool {
         matches!(self, Self::ColdNoTempControl)
     }
 
@@ -86,7 +86,7 @@ impl LiquidState {
     ///
     /// [`Cooling`]: LiquidState::Cooling
     #[must_use]
-    pub fn is_cooling(&self) -> bool {
+    pub const fn is_cooling(&self) -> bool {
         matches!(self, Self::Cooling)
     }
 
@@ -94,7 +94,7 @@ impl LiquidState {
     ///
     /// [`Heating`]: LiquidState::Heating
     #[must_use]
-    pub fn is_heating(&self) -> bool {
+    pub const fn is_heating(&self) -> bool {
         matches!(self, Self::Heating)
     }
 
@@ -102,7 +102,7 @@ impl LiquidState {
     ///
     /// [`TargetTemperature`]: LiquidState::TargetTemperature
     #[must_use]
-    pub fn is_target_temperature(&self) -> bool {
+    pub const fn is_target_temperature(&self) -> bool {
         matches!(self, Self::TargetTemperature)
     }
 
@@ -110,7 +110,7 @@ impl LiquidState {
     ///
     /// [`WarmNoTempControl`]: LiquidState::WarmNoTempControl
     #[must_use]
-    pub fn is_warm_no_temp_control(&self) -> bool {
+    pub const fn is_warm_no_temp_control(&self) -> bool {
         matches!(self, Self::WarmNoTempControl)
     }
 }
