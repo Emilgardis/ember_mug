@@ -11,7 +11,8 @@ impl EmberMug {
         &self,
         temperature_unit: &TemperatureUnit,
     ) -> Result<(), WriteError> {
-        self.command(&crate::characteristics::TEMPERATURE_UNIT, temperature_unit).await
+        self.command(&crate::characteristics::TEMPERATURE_UNIT, temperature_unit)
+            .await
     }
 }
 
