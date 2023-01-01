@@ -93,7 +93,7 @@
 </span><span class="kw">pub async fn </span>search_adapter_for_ember(
     adapter: <span class="kw-2">&amp;</span>platform::Adapter,
     mac: <span class="prelude-ty">Option</span>&lt;BDAddr&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">crate</span>::Peripheral&gt;, btleplug::Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">crate</span>::mug::Peripheral&gt;, btleplug::Error&gt; {
     <span class="kw">use </span>futures::FutureExt;
     <span class="kw">let </span>adapter_info = adapter.adapter_info().boxed().<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="macro">tracing::debug!</span>(
@@ -128,7 +128,7 @@
 
 <span class="doccomment">/// Get mugs on all adapters
 </span><span class="kw">pub async fn </span>get_mugs() -&gt; <span class="prelude-ty">Result</span>&lt;
-    <span class="kw">impl </span>futures::Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::Peripheral, SearchError&gt;&gt; + <span class="lifetime">&#39;static</span>,
+    <span class="kw">impl </span>futures::Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::mug::Peripheral, SearchError&gt;&gt; + <span class="lifetime">&#39;static</span>,
     SearchError,
 &gt; {
     <span class="kw">let </span>manager = platform::Manager::new().<span class="kw">await</span><span class="question-mark">?</span>;
@@ -139,15 +139,15 @@
 <span class="doccomment">/// Search for mugs on all adapters
 </span><span class="kw">pub async fn </span>get_mugs_on_adapters(
     adapters: <span class="kw-2">&amp;</span>[platform::Adapter],
-) -&gt; <span class="kw">impl </span>futures::Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::Peripheral, SearchError&gt;&gt; + <span class="lifetime">&#39;static </span>{
+) -&gt; <span class="kw">impl </span>futures::Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::mug::Peripheral, SearchError&gt;&gt; + <span class="lifetime">&#39;static </span>{
     <span class="kw">let </span><span class="kw-2">mut </span>set = tokio::task::JoinSet::new();
     <span class="kw">for </span>adapter <span class="kw">in </span>adapters {
         <span class="kw">let </span>adapter = adapter.clone();
         set.spawn(<span class="kw">async move </span>{ search_adapter_for_ember(<span class="kw-2">&amp;</span>adapter, <span class="prelude-val">None</span>).<span class="kw">await </span>});
     }
     futures::stream::try_unfold((set, <span class="macro">vec!</span>[]), |(<span class="kw-2">mut </span>set, <span class="kw-2">mut </span>rem)| <span class="kw">async move </span>{
-        <span class="kw">if </span>!rem.is_empty() {
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((rem.pop().unwrap(), (set, rem))));
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(left) = rem.pop() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((left, (set, rem))));
         }
         <span class="kw">if let </span><span class="prelude-val">Some</span>(res) = set.join_next().<span class="kw">await </span>{
             rem = res<span class="question-mark">??</span>;
