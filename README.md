@@ -13,7 +13,7 @@ This crate provides a Rust interface for interacting with Ember Mug devices. It 
 ## Example
 
 ```rust ,no_run
-use ember_mug::{EmberMug, Temperature};
+use ember_mug::{mug::Temperature, EmberMug};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
