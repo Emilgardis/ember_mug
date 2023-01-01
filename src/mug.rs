@@ -75,7 +75,8 @@ impl Drop for EmberMug {
         tokio::task::spawn(async move {
             // XXX: Is this correct?
             std::sync::atomic::fence(std::sync::atomic::Ordering::Acquire);
-            peripheral.disconnect().await });
+            peripheral.disconnect().await
+        });
     }
 }
 
