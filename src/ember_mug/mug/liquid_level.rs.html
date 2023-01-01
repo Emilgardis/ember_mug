@@ -34,11 +34,13 @@
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
 <a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the level of liquid present in the cup
     </span><span class="kw">pub async fn </span>get_liquid_level(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;LiquidLevel, ReadError&gt; {
-        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::LIQUID_LEVEL).<span class="kw">await
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::LIQUID_LEVEL)
+            .<span class="kw">await
     </span>}
 }
 

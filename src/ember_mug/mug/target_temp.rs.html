@@ -12,18 +12,22 @@
 <a href="#12" id="12">12</a>
 <a href="#13" id="13">13</a>
 <a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the target temperature of the mug
     </span><span class="kw">pub async fn </span>get_target_temperature(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Temperature, ReadError&gt; {
-        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TARGET_TEMP).<span class="kw">await
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TARGET_TEMP)
+            .<span class="kw">await
     </span>}
     <span class="doccomment">/// Set the target temperature of the mug
     </span><span class="kw">pub async fn </span>set_target_temperature(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         temperature: <span class="kw-2">&amp;</span>Temperature,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), WriteError&gt; {
-        <span class="self">self</span>.command(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TARGET_TEMP, temperature).<span class="kw">await
+        <span class="self">self</span>.command(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TARGET_TEMP, temperature)
+            .<span class="kw">await
     </span>}
 }
 </code></pre></div>

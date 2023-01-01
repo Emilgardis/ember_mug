@@ -5,11 +5,13 @@
 <a href="#5" id="5">5</a>
 <a href="#6" id="6">6</a>
 <a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieves the current temperature of the mug
     </span><span class="kw">pub async fn </span>get_current_temperature(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Temperature, ReadError&gt; {
-        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::CURRENT_TEMP).<span class="kw">await
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::CURRENT_TEMP)
+            .<span class="kw">await
     </span>}
 }
 </code></pre></div>

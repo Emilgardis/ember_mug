@@ -41,6 +41,7 @@
 <a href="#41" id="41">41</a>
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Retrieve the current unit of temperature used by the mug.
@@ -54,7 +55,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         temperature_unit: <span class="kw-2">&amp;</span>TemperatureUnit,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), WriteError&gt; {
-        <span class="self">self</span>.command(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TEMPERATURE_UNIT, temperature_unit).<span class="kw">await
+        <span class="self">self</span>.command(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TEMPERATURE_UNIT, temperature_unit)
+            .<span class="kw">await
     </span>}
 }
 

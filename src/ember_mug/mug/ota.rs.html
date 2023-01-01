@@ -23,7 +23,7 @@
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Info about the current firmware running on the mug.
     </span><span class="kw">pub async fn </span>get_ota(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Ota, ReadError&gt; {
-       <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::OTA).<span class="kw">await
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::OTA).<span class="kw">await
     </span>}
 }
 

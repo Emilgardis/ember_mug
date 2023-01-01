@@ -114,11 +114,13 @@
 <a href="#114" id="114">114</a>
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// The current state of the mug
     </span><span class="kw">pub async fn </span>get_liquid_state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;LiquidState, ReadError&gt; {
-        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::LIQUID_STATE).<span class="kw">await
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::LIQUID_STATE)
+            .<span class="kw">await
     </span>}
 }
 

@@ -24,18 +24,22 @@
 <a href="#24" id="24">24</a>
 <a href="#25" id="25">25</a>
 <a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">impl </span>EmberMug {
     <span class="doccomment">/// Get the current date and timezone on the mug
     </span><span class="kw">pub async fn </span>get_time_date_zone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;TimeDateZone, ReadError&gt; {
-        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TIME_DATE_ZONE).<span class="kw">await
+        <span class="self">self</span>.read_deserialize(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TIME_DATE_ZONE)
+            .<span class="kw">await
     </span>}
     <span class="doccomment">/// A sink for the mug to store the current date and timezone
     </span><span class="kw">pub async fn </span>set_time_date_zone(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         time_date_zone: <span class="kw-2">&amp;</span>TimeDateZone,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), WriteError&gt; {
-        <span class="self">self</span>.command(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TIME_DATE_ZONE, time_date_zone).<span class="kw">await
+        <span class="self">self</span>.command(<span class="kw-2">&amp;</span><span class="kw">crate</span>::characteristics::TIME_DATE_ZONE, time_date_zone)
+            .<span class="kw">await
     </span>}
 }
 
