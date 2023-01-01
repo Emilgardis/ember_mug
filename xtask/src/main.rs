@@ -30,7 +30,7 @@ fn main() -> color_eyre::Result<()> {
 
     match args {
         Args::Release => {
-            let version = pkgid()?.rsplit_once('@').unwrap().1.to_string();
+            let version = pkgid()?.rsplit_once(['#', '@']).unwrap().1.to_string();
             color_eyre::eyre::ensure!(
                 version.starts_with(|c: char| c.is_ascii_digit()),
                 "version doesn't start with a number"
@@ -202,8 +202,11 @@ mod tests {
     #[test]
     fn assert_pkgid_hashtag() {
         let pkgid = dbg!(pkgid().unwrap());
-        assert!(pkgid.contains('#'));
-        assert!(pkgid.contains("ember_mug@"));
+        let Some((rest, _ver)) = pkgid.rsplit_once(['#', '@']) else {
+            panic!("invalid pkgid?")
+        };
+
+        rest.ends_with("ember_mug");
     }
 
     pub fn walk_dir<'a>(
