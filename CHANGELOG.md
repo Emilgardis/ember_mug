@@ -8,6 +8,8 @@
 
 ## [v0.1.0] - 2023-01-01
 
+- Initial release.
+
 ## [End of Changelog]
 
 Changelog starts on v0.1.0
