@@ -1,4 +1,4 @@
-# Ember Mug | Rust crate for interacting with an Ember Ceramic Mug
+# ember_mug | Rust crate for controlling and retrieving data from an Ember Ceramic Mug using Bluetooth Low Energy (BLE)"
 
 [![github]](https://github.com/emilgardis/ember_mug)
 
@@ -8,7 +8,7 @@ You can see current unpublished docs here: [![local-docs]](https://emilgardis.gi
 
 [local-docs]: https://img.shields.io/github/actions/workflow/status/emilgardis/ember_mug/gh-pages.yml?branch=main
 
-This crate provides a Rust interface for interacting with Ember Mug devices. It provides access to the various characteristics of an Ember Mug, such as temperature, battery level, and more. It also provides a convenience struct for representing an Ember Mug device and interacting with it through the [btleplug](https://crates.io/crates/btleplug) crate. This crate is useful for developers looking to create applications that can control and monitor Ember Mug devices, such as by retrieving the current temperature or battery level, setting the target temperature or mug color, or accessing device metadata.
+This crate provides a Rust interface for interacting with Ember Mug devices. It provides access to the various characteristics of an Ember Mug, such as temperature, battery level, and more. It also provides a convenience struct for representing an Ember Mug device and interacting with it through the [btleplug](https://crates.io/crates/btleplug) crate. This crate is useful for developers looking to create applications that can control and monitor Ember Mug devices, such as retrieving the current temperature or battery level, setting the target temperature or mug color, or accessing device metadata.
 
 ## Example
 
@@ -50,7 +50,9 @@ Target temperature: 54°C
 Changed target temperature to 60°C
 ```
 
+## Kudos
 
+Thanks to [orlopau/ember-mug](https://github.com/orlopau/ember-mug) and [sopelj/python-ember-mug](https://github.com/sopelj/python-ember-mug) for providing hints towards the various BLE characteristics
 
 <h5> License </h5>
 
