@@ -228,6 +228,7 @@
 <a href="#228" id="228">228</a>
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Hosts [`EmberMug`] and related functions
 </span><span class="kw">use </span>std::io::Cursor;
 
@@ -305,7 +306,8 @@
         tokio::task::spawn(<span class="kw">async move </span>{
             <span class="comment">// XXX: Is this correct?
             </span>std::sync::atomic::fence(std::sync::atomic::Ordering::Acquire);
-            peripheral.disconnect().<span class="kw">await </span>});
+            peripheral.disconnect().<span class="kw">await
+        </span>});
     }
 }
 
