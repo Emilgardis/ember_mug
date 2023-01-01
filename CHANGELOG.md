@@ -4,7 +4,11 @@
 
 ## [Unreleased] - ReleaseDate
 
-[Commits](https://github.com/emilgardis/ember_mug/compare/v0.1.0...Unreleased)
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.1.1...Unreleased)
+
+## [v0.1.1] - 2023-01-01
+
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.1.0...v0.1.1)
 
 - When all `EmberMug` and it's clones have been dropped, disconnect the device.
 

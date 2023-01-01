@@ -1,6 +1,6 @@
 # ember_mug | Rust crate for controlling and retrieving data from an Ember Ceramic Mug using Bluetooth Low Energy (BLE)
 
-[![github]](https://github.com/emilgardis/ember_mug)&ensp;[![crates-io]](https://crates.io/crates/ember_mug)&ensp;[![docs-rs-big]](https://docs.rs/ember_mug/0.1.0/ember_mug/)
+[![github]](https://github.com/emilgardis/ember_mug)&ensp;[![crates-io]](https://crates.io/crates/ember_mug)&ensp;[![docs-rs-big]](https://docs.rs/ember_mug/0.1.1/ember_mug/)
 
 [github]: https://img.shields.io/badge/github-emilgardis/ember__mug-8da0cb?style=for-the-badge&labelColor=555555&logo=github
 
