@@ -3,7 +3,7 @@
 <p>You can see current unpublished docs here: <a href="https://emilgardis.github.io/ember_mug/ember_mug"><img src="https://img.shields.io/github/actions/workflow/status/emilgardis/ember_mug/gh-pages.yml?branch=main" alt="local-docs" /></a></p>
 <p>This crate provides a Rust interface for interacting with Ember Mug devices. It provides access to the various characteristics of an Ember Mug, such as temperature, battery level, and more. It also provides a convenience struct for representing an Ember Mug device and interacting with it through the <a href="https://crates.io/crates/btleplug">btleplug</a> crate. This crate is useful for developers looking to create applications that can control and monitor Ember Mug devices, such as by retrieving the current temperature or battery level, setting the target temperature or mug color, or accessing device metadata.</p>
 <h3 id="example"><a href="#example">Example</a></h3>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ember_mug::{EmberMug, Temperature};
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ember_mug::{mug::Temperature, EmberMug};
 
 <span class="attr">#[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
