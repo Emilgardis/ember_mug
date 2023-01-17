@@ -37,8 +37,8 @@ pub enum TemperatureUnit {
 impl std::fmt::Display for TemperatureUnit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Celsius => f.write_str("C"),
-            Self::Fahrenheit => f.write_str("F"),
+            Self::Celsius => f.write_str("°C"),
+            Self::Fahrenheit => f.write_str("°F"),
         }
     }
 }

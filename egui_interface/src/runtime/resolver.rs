@@ -62,7 +62,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
         mut stream: impl FnMut(flume::Sender<T>) -> F,
     ) where
         T: Send + Sync + 'static + std::any::Any,
-        F: std::future::Future<Output = Result<(), E>> + Send + 'static,
+        F: std::future::Future<Output = Result<std::convert::Infallible, E>> + Send + 'static,
         K: Clone + 'static,
         E: Send + Sync + 'static,
     {
@@ -73,8 +73,8 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
         self.add(key, recv);
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn poll(&mut self) {
-        tracing::trace!(pending = ?self.pending.len(), streams = ?self.streams.len());
         self.pending.retain_mut(|(key, item)| {
             let Some(item) = item() else { return true };
             self.resolved.insert(key.clone(), item);
@@ -100,7 +100,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
         if self.resolved.capacity() as f32 / 1.5 >= self.resolved.len() as f32 {
             self.resolved.shrink_to_fit()
         }
-
+        tracing::trace!(?id, "task resolved");
         Some(*item)
     }
 
@@ -159,6 +159,8 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
             panic!("expected: {}", std::any::type_name::<T>())
         };
 
+        tracing::trace!(?key, "stream returned");
+
         Ok(Some(*item))
     }
 
@@ -170,7 +172,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
     ) -> Result<Option<T>, StreamError<E>>
     where
         T: Send + Sync + 'static + std::any::Any,
-        F: std::future::Future<Output = Result<(), E>> + Send + 'static,
+        F: std::future::Future<Output = Result<std::convert::Infallible, E>> + Send + 'static,
         K: Clone + 'static,
         E: Send + Sync + 'static,
     {

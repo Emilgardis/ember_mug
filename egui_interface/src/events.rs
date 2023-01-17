@@ -55,8 +55,8 @@ impl PushEvent {
             PushEvent::RefreshTargetTemperature(target) => data.target_temp = target.to_degree(),
             PushEvent::RefreshDrinkTemperature(current) => data.current_temp = current.to_degree(),
             PushEvent::AuthInfoNotFound() => (),
-            PushEvent::RefreshLiquidLevel(_) => {
-                tracing::debug!("got refresh of level, doing nothing")
+            PushEvent::RefreshLiquidLevel(liquid) => {
+                data.liquid = liquid;
             }
             PushEvent::RefreshLiquidState(state) => data.state = state,
             PushEvent::BatteryVoltageState(battery) => data.battery = battery,

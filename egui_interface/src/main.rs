@@ -11,7 +11,6 @@ fn main() {
         .with_line_number(true)
         .with_file(true)
         .with_env_filter(EnvFilter::from_default_env())
-        .pretty()
         .init();
     color_eyre::install().unwrap();
 

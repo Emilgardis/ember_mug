@@ -13,6 +13,7 @@ pub struct EmberMugApp {
 pub struct Mug {
     mug: ember_mug::EmberMug,
     data: MugData,
+    wanted_target_temp: f32,
 }
 
 #[derive(Debug)]
@@ -22,6 +23,7 @@ pub struct MugData {
     pub temp_unit: ember_mug::mug::TemperatureUnit,
     pub state: ember_mug::mug::LiquidState,
     pub battery: ember_mug::mug::Battery,
+    pub liquid: ember_mug::mug::LiquidLevel,
 }
 
 impl EmberMugApp {
@@ -44,7 +46,7 @@ impl eframe::App for EmberMugApp {
             resolver,
         } = self;
         resolver.poll();
-        frame.set_window_size(egui::Vec2::new(180.0, 90.0));
+        frame.set_window_size(ctx.used_size().max(egui::Vec2::new(200.0, 150.0)));
         'data: {
             if opt_mug.is_none() {
                 let re = ctx.repaint_on_drop();
@@ -57,15 +59,18 @@ impl eframe::App for EmberMugApp {
                     let current_temp = mug.get_current_temperature().await?.to_degree();
                     let state = mug.get_liquid_state().await?;
                     let temp_unit = mug.get_temperature_unit().await?;
+                    let liquid = mug.get_liquid_level().await?;
                     let battery = mug.get_battery().await?;
                     Ok::<_, color_eyre::Report>(Mug {
                         mug,
+                        wanted_target_temp: target_temp,
                         data: MugData {
                             target_temp,
                             current_temp,
                             temp_unit,
                             state,
                             battery,
+                            liquid,
                         },
                     })
                 }) {
@@ -92,6 +97,7 @@ impl eframe::App for EmberMugApp {
                             let target_temp = mug.get_target_temperature().await?.to_degree();
                             let current_temp = mug.get_current_temperature().await?.to_degree();
                             let state = mug.get_liquid_state().await?;
+                            let liquid = mug.get_liquid_level().await?;
                             let temp_unit = mug.get_temperature_unit().await?;
                             let battery = mug.get_battery().await?;
                             sender.send(MugData {
@@ -100,6 +106,7 @@ impl eframe::App for EmberMugApp {
                                 state,
                                 temp_unit,
                                 battery,
+                                liquid,
                             })?;
                         }
                     }
@@ -137,7 +144,7 @@ impl eframe::App for EmberMugApp {
                                 tracing::debug!(?event, "got event");
                                 sender.send(event)?;
                             }
-                            Ok(())
+                            color_eyre::eyre::bail!("stream exited early")
                         }
                     },
                 ) {
@@ -159,21 +166,72 @@ impl eframe::App for EmberMugApp {
         }
         egui::CentralPanel::default().show(ctx, |ui| {
             if let Some(mug) = opt_mug {
-                let data = &mug.data;
+                let data = &mut mug.data;
                 ui.label(format!(
                     "Battery: {}, is {}charging",
                     data.battery.battery,
                     if !data.battery.charge { "not " } else { "" }
                 ));
                 ui.label(format!(
-                    "Current temperature: {}{}",
+                    "Current temperature: {:.1}{}",
                     data.current_temp, data.temp_unit
                 ));
                 ui.label(format!(
-                    "Target temperature: {}{}",
+                    "Target temperature: {:.1}{}",
                     data.target_temp, data.temp_unit
                 ));
                 ui.label(format!("State: {:?}", data.state));
+                ui.label(format!("Liquid: {:?}", data.liquid));
+                let needs_update: bool;
+                if let Some(res) =
+                    resolver.try_take::<Result<f32, color_eyre::Report>>("update_temp")
+                {
+                    tracing::debug!("temp updated");
+                    mug.data.target_temp = res.unwrap();
+                    tracing::debug!(?mug.wanted_target_temp, ?mug.data.target_temp);
+                    needs_update = true;
+                } else {
+                    if (mug.wanted_target_temp - mug.data.target_temp).abs() > 0.05 {
+                        tracing::debug!(?mug.wanted_target_temp, ?mug.data.target_temp);
+                        needs_update = true;
+                    } else {
+                        needs_update = false;
+                    }
+                }
+                if ui
+                    .add(
+                        egui::widgets::Slider::new(&mut mug.wanted_target_temp, 50.0..=62.5)
+                            .fixed_decimals(1),
+                    )
+                    .changed()
+                    || needs_update
+                {
+                    let ctx_slider = ctx.clone();
+                    if let Some(_) = resolver.try_take_with("slider", async move {
+                        let _repaint = ctx_slider.repaint_on_drop();
+                        tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+                    }) {
+                        let target = mug.wanted_target_temp;
+                        let ctx = ctx.clone();
+                        let mug = mug.mug.clone();
+                        if !resolver.exists(&"update_temp") {
+                            resolver.add_with::<Result<f32, color_eyre::Report>, _>(
+                                "update_temp",
+                                async move {
+                                    let _repaint = ctx.repaint_on_drop();
+                                    mug.set_target_temperature(
+                                        &ember_mug::mug::Temperature::from_degree(target),
+                                    )
+                                    .await?;
+                                    mug.get_target_temperature()
+                                        .await
+                                        .map_err(Into::into)
+                                        .map(|temp| temp.to_degree())
+                                },
+                            )
+                        }
+                    };
+                }
             } else {
                 ui.label("connecting to mug");
             }
