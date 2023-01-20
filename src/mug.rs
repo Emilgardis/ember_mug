@@ -43,6 +43,8 @@ pub struct EmberMug {
     peripheral: std::sync::Arc<EmberMugInner>,
     /// The set of [`Characteristic`]s for this device
     characteristics: std::collections::BTreeSet<Characteristic>,
+    /// the adapter the mug is connected to
+    adapter: btleplug::platform::Adapter,
 }
 
 #[derive(Clone)]
@@ -58,9 +60,8 @@ impl std::ops::Deref for EmberMugInner {
 impl Drop for EmberMugInner {
     fn drop(&mut self) {
         let peripheral = self.0.clone();
-        tokio::task::spawn(async move {
-            tracing::debug!("disconnecting device");
-            peripheral.disconnect().await
+        futures::executor::block_on(async move {
+            let _ = peripheral.disconnect().await;
         });
     }
 }
@@ -71,21 +72,60 @@ impl EmberMug {
         use futures::TryStreamExt;
         // FIXME: pin on stack with `Pin::new_unchecked` or `pin-utils`
         let mut stream = Box::pin(crate::btle::get_mugs().await?);
-        let Some(mug) = stream.try_next().await? else {
+        let Some((adapter, mug)) = stream.try_next().await? else {
             return Err(ConnectError::NoDevice)
         };
-        Self::connect_mug(mug).await
+        Self::connect_mug(adapter, mug).await
     }
 
     /// Connect to specific Ember Mug
-    pub async fn connect_mug(peripheral: Peripheral) -> Result<Self, ConnectError> {
+    pub async fn connect_mug(
+        adapter: btleplug::platform::Adapter,
+        peripheral: Peripheral,
+    ) -> Result<Self, ConnectError> {
         tracing::debug!(peripheral.address = ?peripheral.address(), peripheral.id = ?peripheral.id(), "connecting to mug");
         peripheral.connect().await?;
         peripheral.discover_services().await?;
         Ok(Self {
             characteristics: peripheral.characteristics(),
             peripheral: std::sync::Arc::new(EmberMugInner(peripheral)),
+            adapter,
         })
+    }
+
+    /// Returns true if the device is connected, the device might be considered disconnected if it doesn't respond in 1 second
+    pub async fn is_connected(&self) -> Result<bool, btleplug::Error> {
+        match tokio::time::timeout(
+            std::time::Duration::from_secs(1),
+            self.peripheral.is_connected(),
+        )
+        .await
+        {
+            Ok(r) => r,
+            Err(_e) => Ok(false),
+        }
+    }
+
+    /// Returns when the device is disconnected.
+    pub async fn is_disconnected(&self) -> Result<(), btleplug::Error> {
+        use btleplug::api::Central as _;
+        use futures::StreamExt;
+        let peripheral_id = std::sync::Arc::new(self.peripheral.id());
+        let mut stream = Box::pin(self.adapter.events().await?.filter_map(move |e| {
+            let peripheral_id = peripheral_id.clone();
+            async move {
+                match e {
+                    btleplug::api::CentralEvent::DeviceDisconnected(id)
+                        if &id == peripheral_id.as_ref() =>
+                    {
+                        Some(())
+                    }
+                    _ => None,
+                }
+            }
+        }));
+        stream.next().await;
+        Ok(())
     }
 }
 

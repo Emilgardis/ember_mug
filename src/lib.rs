@@ -9,10 +9,15 @@ pub mod mug;
 
 pub use mug::EmberMug;
 
+pub use btleplug;
+
 /// Assigned Bluetooth company identifier for `Ember Technologies, Inc.`
 pub static EMBER_ASSIGNED_NUMBER: u16 = 0x03C1;
 /// The UUID for the Ember Mug service
 pub const EMBER_MUG_SERVICE_UUID: uuid::Uuid = uuid::uuid!("fc543622-236c-4c94-8fa9-944a3e5353fa");
+/// Known public UUIDs of ember mugs
+pub const EMBER_MUG_PUBLIC_SERVICES: &[uuid::Uuid] =
+    &[uuid::uuid!("0000180a-0000-1000-8000-00805f9b34fb")];
 
 #[rustfmt::skip]
 #[doc(hidden)]

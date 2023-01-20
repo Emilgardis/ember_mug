@@ -1,7 +1,10 @@
 use std::future::Future;
 
 use once_cell::sync::OnceCell;
-use tokio::sync::oneshot::{self, Receiver};
+use tokio::{
+    sync::oneshot::{self, Receiver},
+    task::JoinHandle,
+};
 
 static HANDLE: OnceCell<tokio::runtime::Handle> = OnceCell::new();
 
@@ -35,7 +38,7 @@ pub fn enter<T>(func: impl FnOnce() -> T) -> T {
     func()
 }
 
-pub fn spawn<T>(fut: impl Future<Output = T> + Send + 'static) -> Receiver<T>
+pub fn spawn<T>(fut: impl Future<Output = T> + Send + 'static) -> (Receiver<T>, JoinHandle<()>)
 where
     T: Send + Sync + 'static,
 {
@@ -45,8 +48,8 @@ where
             let res = fut.await;
             let _ = tx.send(res);
         };
-        tokio::task::spawn(fut);
-        rx
+        let handle = tokio::task::spawn(fut);
+        (rx, handle)
     })
 }
 

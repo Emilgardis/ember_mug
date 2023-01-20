@@ -1,8 +1,8 @@
 use hashbrown::HashMap;
-use tokio::sync::oneshot;
+use tokio::{sync::oneshot, task::JoinHandle};
 
 type ResolverItem = Box<dyn std::any::Any + Send + Sync>;
-type PendingItem = Box<dyn FnMut() -> Option<ResolverItem>>;
+type PendingItem = (Box<dyn FnMut() -> Option<ResolverItem>>, JoinHandle<()>);
 type PendingStream = Box<dyn FnMut() -> Result<ResolverItem, flume::TryRecvError>>;
 
 #[derive(Default)]
@@ -14,19 +14,37 @@ pub struct Resolver<K> {
 
 impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
     #[track_caller]
-    pub fn add<T>(&mut self, key: K, mut item: oneshot::Receiver<T>)
+    pub fn add<T>(&mut self, key: K, mut item: (oneshot::Receiver<T>, JoinHandle<()>))
     where
         T: Send + Sync + 'static + std::any::Any,
         K: Clone + 'static,
     {
-        tracing::debug!(?key, "adding task: {}", std::panic::Location::caller());
+        tracing::trace!(?key, "adding task: {}", std::panic::Location::caller());
         self.pending.push((
             key,
-            Box::new(move || {
-                let out = item.try_recv().ok()?;
-                Some(Box::new(out))
-            }),
+            (
+                Box::new(move || {
+                    let out = item.0.try_recv().ok()?;
+                    Some(Box::new(out))
+                }),
+                item.1,
+            ),
         ));
+    }
+
+    pub fn kill(&mut self, id: K) {
+        let _ = self.streams.remove(&id);
+        let Some(idx) = self.pending.iter().position(|(k, _)| k == &id) else {
+            return;
+        };
+        let (_, (_, jh)) = self.pending.remove(idx);
+        jh.abort();
+    }
+
+    pub fn kill_all(&mut self) {
+        self.streams.clear();
+        self.pending.iter().for_each(|(_, (_, jh))| jh.abort());
+        self.pending.clear();
     }
 
     #[track_caller]
@@ -75,7 +93,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
 
     #[tracing::instrument(skip_all)]
     pub fn poll(&mut self) {
-        self.pending.retain_mut(|(key, item)| {
+        self.pending.retain_mut(|(key, (item, _))| {
             let Some(item) = item() else { return true };
             self.resolved.insert(key.clone(), item);
             false

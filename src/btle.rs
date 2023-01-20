@@ -1,5 +1,5 @@
 //! Functions for communicating with BLE to connect to Ember Mugs
-use std::time::Duration;
+use futures::{StreamExt, TryStreamExt};
 
 use btleplug::{
     api::{BDAddr, Central, Manager, Peripheral, ScanFilter},
@@ -12,70 +12,99 @@ use crate::SearchError;
 pub async fn search_adapter_for_ember(
     adapter: &platform::Adapter,
     mac: Option<BDAddr>,
-) -> Result<Vec<crate::mug::Peripheral>, btleplug::Error> {
+) -> Result<
+    impl futures::Stream<Item = Result<crate::mug::Peripheral, btleplug::Error>> + 'static,
+    btleplug::Error,
+> {
     use futures::FutureExt;
     let adapter_info = adapter.adapter_info().boxed().await?;
     tracing::debug!(
         adapter.adapter_info = ?adapter_info,
         "discovering mugs on adapter"
     );
-    adapter.start_scan(ScanFilter::default()).await?;
-    tokio::time::sleep(Duration::from_secs(2)).await;
+    let adapter = adapter.clone();
 
-    let mut mugs = Vec::new();
-    for peripheral in adapter.peripherals().await? {
-        if let Some(props) = peripheral.properties().await? {
-            if match mac {
-                Some(mac) => props.address == mac,
-                None => {
-                    props
-                        .local_name
-                        .map(|name| name.contains("Ember"))
-                        .unwrap_or_default()
-                        || props
-                            .manufacturer_data
-                            .keys()
-                            .any(|&m| m == crate::EMBER_ASSIGNED_NUMBER)
+    adapter
+        .start_scan(ScanFilter {
+            services: crate::EMBER_MUG_PUBLIC_SERVICES.to_vec(),
+        })
+        .await?;
+    let stream = adapter.events().await?;
+    Ok(stream
+        .filter_map(move |f| {
+            let adapter = adapter.clone();
+            async move {
+                match f {
+                    btleplug::api::CentralEvent::DeviceDiscovered(id) => {
+                        tracing::trace!(?id, "discovered");
+                        Some(adapter.peripheral(&id).await)
+                    }
+                    // TODO: can this stall if the service is not found but the device was discovered?
+                    _ => None,
                 }
-            } {
-                mugs.push(peripheral);
             }
-        }
-    }
-    Ok(mugs)
+        })
+        .try_filter_map(move |peripheral| async move {
+            let peripheral = if let Some(props) = peripheral.properties().await? {
+                match mac {
+                    Some(mac) => props.address == mac,
+                    None => {
+                        props
+                            .local_name
+                            .map(|name| name.contains("Ember"))
+                            .unwrap_or_default()
+                            || props
+                                .manufacturer_data
+                                .keys()
+                                .any(|&m| m == crate::EMBER_ASSIGNED_NUMBER)
+                    }
+                }
+                .then_some(peripheral)
+            } else {
+                None
+            };
+            Ok(peripheral)
+        })
+        .boxed())
 }
 
 /// Get mugs on all adapters
 pub async fn get_mugs() -> Result<
-    impl futures::Stream<Item = Result<crate::mug::Peripheral, SearchError>> + 'static,
+    impl futures::Stream<Item = Result<(platform::Adapter, crate::mug::Peripheral), crate::SearchError>>,
     SearchError,
 > {
     let manager = platform::Manager::new().await?;
     let adapters = manager.adapters().await?;
-    Ok(get_mugs_on_adapters(&adapters).await)
+    Ok(get_mugs_on_adapters(&adapters)
+        .await
+        .map_ok(move |(i, p)| (adapters[i].clone(), p)))
 }
 
 /// Search for mugs on all adapters
 pub async fn get_mugs_on_adapters(
     adapters: &[platform::Adapter],
-) -> impl futures::Stream<Item = Result<crate::mug::Peripheral, SearchError>> + 'static {
+) -> impl futures::Stream<Item = Result<(usize, crate::mug::Peripheral), crate::SearchError>> + 'static
+{
     let mut set = tokio::task::JoinSet::new();
-    for adapter in adapters {
+    for (i, adapter) in adapters.iter().enumerate() {
         let adapter = adapter.clone();
-        set.spawn(async move { search_adapter_for_ember(&adapter, None).await });
+        set.spawn(async move {
+            search_adapter_for_ember(&adapter, None)
+                .await
+                .map(|res| res.map_ok(move |p| (i, p)))
+        });
     }
-    futures::stream::try_unfold((set, vec![]), |(mut set, mut rem)| async move {
-        if let Some(left) = rem.pop() {
-            return Ok(Some((left, (set, rem))));
-        }
+    tracing::debug!("spawned search tasks");
+    futures::stream::try_unfold(set, |mut set| async move {
         if let Some(res) = set.join_next().await {
-            rem = res??;
-            let Some(p) = rem.pop() else {
-                return Ok(None)
-            };
-            Ok(Some((p, (set, rem))))
+            Ok(Some((res??, set)))
         } else {
             Ok(None)
         }
+    })
+    // FIXME: Replace with TryFlattenUnordered when available
+    .flat_map_unordered(0, |f: Result<_, crate::SearchError>| match f {
+        Ok(s) => s.map_err(crate::SearchError::BtleError).boxed(),
+        Err(e) => futures::stream::once(async { Err(e) }).boxed(),
     })
 }

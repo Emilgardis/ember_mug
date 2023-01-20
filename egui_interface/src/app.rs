@@ -76,6 +76,7 @@ impl eframe::App for EmberMugApp {
                 }) {
                     match p {
                         Ok(v) => {
+                            tracing::info!("mug connected");
                             opt_mug.replace(v);
                         }
                         Err(e) => {
@@ -164,6 +165,30 @@ impl eframe::App for EmberMugApp {
                 }
             }
         }
+
+        if let Some(()) = opt_mug
+            .as_ref()
+            .and_then(|mug| {
+                let mug = mug.mug.clone();
+                let ctx = ctx.clone();
+
+                resolver.try_take_with::<Result<_, ember_mug::btleplug::Error>, _>(
+                    "check_alive",
+                    async move {
+                        let _repaint = ctx.clone();
+                        mug.is_disconnected().await?;
+                        ctx.request_repaint();
+                        Ok(())
+                    },
+                )
+            })
+            .transpose()
+            .unwrap()
+        {
+            tracing::info!("mug disconnected!");
+            let a = std::mem::take(opt_mug);
+            crate::runtime::spawn(async move { a });
+        }
         egui::CentralPanel::default().show(ctx, |ui| {
             if let Some(mug) = opt_mug {
                 let data = &mut mug.data;
@@ -190,13 +215,11 @@ impl eframe::App for EmberMugApp {
                     mug.data.target_temp = res.unwrap();
                     tracing::debug!(?mug.wanted_target_temp, ?mug.data.target_temp);
                     needs_update = true;
+                } else if (mug.wanted_target_temp - mug.data.target_temp).abs() > 0.05 {
+                    tracing::trace!(?mug.wanted_target_temp, ?mug.data.target_temp);
+                    needs_update = true;
                 } else {
-                    if (mug.wanted_target_temp - mug.data.target_temp).abs() > 0.05 {
-                        tracing::debug!(?mug.wanted_target_temp, ?mug.data.target_temp);
-                        needs_update = true;
-                    } else {
-                        needs_update = false;
-                    }
+                    needs_update = false;
                 }
                 if ui
                     .add(
@@ -207,10 +230,13 @@ impl eframe::App for EmberMugApp {
                     || needs_update
                 {
                     let ctx_slider = ctx.clone();
-                    if let Some(_) = resolver.try_take_with("slider", async move {
-                        let _repaint = ctx_slider.repaint_on_drop();
-                        tokio::time::sleep(std::time::Duration::from_millis(400)).await;
-                    }) {
+                    let slider = resolver
+                        .try_take_with("temp_update", async move {
+                            let _repaint = ctx_slider.repaint_on_drop();
+                            tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+                        })
+                        .is_some();
+                    if slider {
                         let target = mug.wanted_target_temp;
                         let ctx = ctx.clone();
                         let mug = mug.mug.clone();
