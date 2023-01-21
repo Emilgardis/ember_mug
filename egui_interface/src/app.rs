@@ -176,7 +176,7 @@ impl eframe::App for EmberMugApp {
                     "check_alive",
                     async move {
                         let _repaint = ctx.clone();
-                        mug.is_disconnected().await?;
+                        mug.disconnected().await?;
                         ctx.request_repaint();
                         Ok(())
                     },

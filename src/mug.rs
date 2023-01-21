@@ -107,7 +107,7 @@ impl EmberMug {
     }
 
     /// Returns when the device is disconnected.
-    pub async fn is_disconnected(&self) -> Result<(), btleplug::Error> {
+    pub async fn disconnected(&self) -> Result<(), btleplug::Error> {
         use btleplug::api::Central as _;
         use futures::StreamExt;
         let peripheral_id = std::sync::Arc::new(self.peripheral.id());
