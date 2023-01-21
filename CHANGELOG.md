@@ -9,7 +9,7 @@
 - Change display format of `TemperatureUnit` to include `°` and drop `°` from `Temperature` display format
 - `ember_mug::btle::get_mugs()` now returns the adapter that the peripheral is on
   and `ember_mug::btle::get_mugs_on_adapters()` returns the index to the adapter.
-- `ember_mug::btle::search_adapter_for_ember()` uses event driven discovery for quicker discovery.
+- `ember_mug::btle::search_adapter_for_ember()` uses event driven discovery for quicker discovery, now returns a stream.
 - `ember_mug::EmberMug::connect_mug()` now requires the adapter for where the peripheral exists
 - Added `ember_mug::EmberMug::is_connected()` to check the status of the mug and `ember_mug::EmberMug::disconnected()` to catch disconnection.
 - Added `ember_mug::EMBER_MUG_PUBLIC_SERVICES` for known services broadcasted by mugs.
