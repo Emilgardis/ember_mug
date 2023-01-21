@@ -4,7 +4,11 @@
 
 ## [Unreleased] - ReleaseDate
 
-[Commits](https://github.com/emilgardis/ember_mug/compare/v0.1.1...Unreleased)
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.2.0...Unreleased)
+
+## [v0.2.0] - 2023-01-21
+
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.1.1...v0.2.0)
 
 - Change display format of `TemperatureUnit` to include `°` and drop `°` from `Temperature` display format
 - `ember_mug::btle::get_mugs()` now returns the adapter that the peripheral is on
