@@ -6,6 +6,8 @@
 
 [Commits](https://github.com/emilgardis/ember_mug/compare/v0.2.0...Unreleased)
 
+- Read and write functions now take a `&ember_mug::KnownCharacteristic` instead of `&uuid::Uuid`
+
 ## [v0.2.0] - 2023-01-21
 
 [Commits](https://github.com/emilgardis/ember_mug/compare/v0.1.1...v0.2.0)
