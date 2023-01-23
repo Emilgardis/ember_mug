@@ -156,7 +156,7 @@ impl EmberMug {
     /// Read data from given characteristic with `uuid`
     pub async fn read_deserialize<T: BinRead + binrw::meta::ReadEndian>(
         &self,
-        uuid: &uuid::Uuid,
+        uuid: &KnownCharacteristic,
     ) -> Result<T, ReadError>
     where
         T::Args: Default,
@@ -165,10 +165,10 @@ impl EmberMug {
     }
 
     /// Deserialize data on given characteristic with `uuid`
-    pub async fn read(&self, uuid: &uuid::Uuid) -> Result<Vec<u8>, ReadError> {
+    pub async fn read(&self, uuid: &KnownCharacteristic) -> Result<Vec<u8>, ReadError> {
         self.peripheral
             .read(
-                self.get_characteristic(uuid)
+                self.get_characteristic(&uuid.get())
                     .ok_or(ReadError::NoSuchCharacteristic)?,
             )
             .await
@@ -179,7 +179,7 @@ impl EmberMug {
     pub async fn write<D>(
         &self,
         write: btleplug::api::WriteType,
-        uuid: &uuid::Uuid,
+        uuid: &KnownCharacteristic,
         data: &D,
     ) -> Result<(), WriteError>
     where
@@ -190,7 +190,7 @@ impl EmberMug {
         data.write(&mut buf)?;
         self.peripheral
             .write(
-                self.get_characteristic(uuid)
+                self.get_characteristic(&uuid.get())
                     .ok_or(WriteError::NoSuchCharacteristic)?,
                 buf.get_ref(),
                 write,
@@ -200,7 +200,7 @@ impl EmberMug {
     }
 
     /// Send command to given characteristic on `uuid`
-    pub async fn command<D>(&self, uuid: &uuid::Uuid, data: &D) -> Result<(), WriteError>
+    pub async fn command<D>(&self, uuid: &KnownCharacteristic, data: &D) -> Result<(), WriteError>
     where
         D: BinWrite + binrw::meta::WriteEndian + Send + Sync,
         <D as BinWrite>::Args: Default,
@@ -210,7 +210,7 @@ impl EmberMug {
     }
 
     /// Send request to given characteristic on `uuid`
-    pub async fn request<D>(&self, uuid: &uuid::Uuid, data: &D) -> Result<(), WriteError>
+    pub async fn request<D>(&self, uuid: &KnownCharacteristic, data: &D) -> Result<(), WriteError>
     where
         D: BinWrite + binrw::meta::WriteEndian + Send + Sync,
         <D as BinWrite>::Args: Default,

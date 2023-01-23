@@ -2,7 +2,8 @@ use super::*;
 impl EmberMug {
     /// Retrieves id of the mug
     pub async fn get_mug_meta(&self) -> Result<MugMeta, ReadError> {
-        self.read_deserialize(&crate::characteristics::MUG_ID).await
+        self.read_deserialize(&crate::KnownCharacteristic::MugId)
+            .await
     }
 }
 

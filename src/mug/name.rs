@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Retreives the name of the mug.
     pub async fn get_name(&self) -> Result<String, ReadError> {
-        String::from_utf8(self.read(&crate::characteristics::NAME).await?).map_err(Into::into)
+        String::from_utf8(self.read(&crate::KnownCharacteristic::Name).await?).map_err(Into::into)
     }
 
     /// Sets the name of the mug.
@@ -36,7 +36,7 @@ impl EmberMug {
         }
 
         self.command(
-            &crate::characteristics::NAME,
+            &crate::KnownCharacteristic::Name,
             &Name {
                 name: name.as_bytes(),
             },

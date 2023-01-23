@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Get the current date and timezone on the mug
     pub async fn get_time_date_zone(&self) -> Result<TimeDateZone, ReadError> {
-        self.read_deserialize(&crate::characteristics::TIME_DATE_ZONE)
+        self.read_deserialize(&crate::KnownCharacteristic::TimeDateZone)
             .await
     }
     /// A sink for the mug to store the current date and timezone
@@ -10,7 +10,7 @@ impl EmberMug {
         &self,
         time_date_zone: &TimeDateZone,
     ) -> Result<(), WriteError> {
-        self.command(&crate::characteristics::TIME_DATE_ZONE, time_date_zone)
+        self.command(&crate::KnownCharacteristic::TimeDateZone, time_date_zone)
             .await
     }
 }

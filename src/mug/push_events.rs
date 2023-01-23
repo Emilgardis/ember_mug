@@ -1,18 +1,17 @@
-use crate::characteristics::PUSH_EVENTS;
-
 use super::*;
 impl EmberMug {
     /// Events sent by the mug for the application to register to.
     ///
     /// Call [`subscribe_push_events`](Self::unsubscribe_push_events) first, and prefer to use [`listen_push_events`](Self::listen_push_events) instead
     pub async fn get_push_event(&self) -> Result<PushEvent, ReadError> {
-        self.read_deserialize(&PUSH_EVENTS).await
+        self.read_deserialize(&crate::KnownCharacteristic::PushEvents)
+            .await
     }
     /// Subscribe to events sent by the mug
     pub async fn subscribe_push_events(&self) -> Result<(), ReadError> {
         self.peripheral
             .subscribe(
-                self.get_characteristic(&PUSH_EVENTS)
+                self.get_characteristic(&crate::KnownCharacteristic::PushEvents.get())
                     .ok_or(ReadError::NoSuchCharacteristic)?,
             )
             .await
@@ -33,8 +32,11 @@ impl EmberMug {
             .notifications()
             .await?
             .filter_map(move |v| async move {
-                if v.uuid == PUSH_EVENTS {
-                    Some(self.read_deserialize(&PUSH_EVENTS).await)
+                if crate::KnownCharacteristic::PushEvents.get() == v.uuid {
+                    Some(
+                        self.read_deserialize(&crate::KnownCharacteristic::PushEvents)
+                            .await,
+                    )
                 } else {
                     tracing::debug!(%v.uuid, ?v.value, "received unknown event");
                     None
@@ -47,7 +49,7 @@ impl EmberMug {
     pub async fn unsubscribe_push_events(&self) -> Result<(), ReadError> {
         self.peripheral
             .unsubscribe(
-                self.get_characteristic(&PUSH_EVENTS)
+                self.get_characteristic(&crate::KnownCharacteristic::PushEvents.get())
                     .ok_or(ReadError::NoSuchCharacteristic)?,
             )
             .await

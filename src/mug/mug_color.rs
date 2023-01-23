@@ -2,12 +2,12 @@ use super::*;
 impl EmberMug {
     /// Retrieves the color of the mug's LED indicator.
     pub async fn get_mug_color(&self) -> Result<Color, ReadError> {
-        self.read_deserialize(&crate::characteristics::MUG_COLOR)
+        self.read_deserialize(&crate::KnownCharacteristic::MugColor)
             .await
     }
     /// Sets the color of the mug's LED indicator.
     pub async fn set_mug_color(&self, color: &Color) -> Result<(), WriteError> {
-        self.command(&crate::characteristics::MUG_COLOR, color)
+        self.command(&crate::KnownCharacteristic::MugColor, color)
             .await
     }
 }

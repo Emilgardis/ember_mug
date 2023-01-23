@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// The current state of the mug
     pub async fn get_liquid_state(&self) -> Result<LiquidState, ReadError> {
-        self.read_deserialize(&crate::characteristics::LIQUID_STATE)
+        self.read_deserialize(&crate::KnownCharacteristic::LiquidState)
             .await
     }
 }

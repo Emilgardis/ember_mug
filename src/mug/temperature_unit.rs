@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Retrieve the current unit of temperature used by the mug.
     pub async fn get_temperature_unit(&self) -> Result<TemperatureUnit, ReadError> {
-        self.read_deserialize(&crate::characteristics::TEMPERATURE_UNIT)
+        self.read_deserialize(&crate::KnownCharacteristic::TemperatureUnit)
             .await
             .map_err(Into::into)
     }
@@ -11,8 +11,11 @@ impl EmberMug {
         &self,
         temperature_unit: &TemperatureUnit,
     ) -> Result<(), WriteError> {
-        self.command(&crate::characteristics::TEMPERATURE_UNIT, temperature_unit)
-            .await
+        self.command(
+            &crate::KnownCharacteristic::TemperatureUnit,
+            temperature_unit,
+        )
+        .await
     }
 }
 
