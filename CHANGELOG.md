@@ -4,7 +4,11 @@
 
 ## [Unreleased] - ReleaseDate
 
-[Commits](https://github.com/emilgardis/ember_mug/compare/v0.2.0...Unreleased)
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.3.0...Unreleased)
+
+## [v0.3.0] - 2023-01-23
+
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.2.0...v0.3.0)
 
 - Read and write functions now take a `&ember_mug::KnownCharacteristic` instead of `&uuid::Uuid`
 
