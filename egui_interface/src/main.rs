@@ -15,6 +15,7 @@ fn main() {
     color_eyre::install().unwrap();
 
     let native_options = eframe::NativeOptions {
+        always_on_top: true,
         ..Default::default()
     };
     let stop = ember_mug_egui::runtime::start();

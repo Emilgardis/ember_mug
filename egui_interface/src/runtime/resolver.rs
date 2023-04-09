@@ -80,7 +80,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
         mut stream: impl FnMut(flume::Sender<T>) -> F,
     ) where
         T: Send + Sync + 'static + std::any::Any,
-        F: std::future::Future<Output = Result<std::convert::Infallible, E>> + Send + 'static,
+        F: std::future::Future<Output = Result<(), E>> + Send + 'static,
         K: Clone + 'static,
         E: Send + Sync + 'static,
     {
@@ -95,6 +95,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
     pub fn poll(&mut self) {
         self.pending.retain_mut(|(key, (item, _))| {
             let Some(item) = item() else { return true };
+            tracing::trace!(?key, "resolved item to id: {:?}", item.type_id());
             self.resolved.insert(key.clone(), item);
             false
         });
@@ -111,8 +112,13 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
     where
         T: Send + Sync + 'static + std::any::Any,
     {
-        let Ok(item) = self.resolved.remove(&id)?.downcast::<T>() else {
-            panic!("expected: {}", std::any::type_name::<T>())
+        let item = match self.resolved.remove(&id)?.downcast::<T>() {
+            Ok(item) => item,
+            Err(item) => panic!(
+                "downcast failed in take, expected: {}, found id: {:?}",
+                std::any::type_name::<T>(),
+                item.type_id()
+            ),
         };
 
         if self.resolved.capacity() as f32 / 1.5 >= self.resolved.len() as f32 {
@@ -144,10 +150,10 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
     {
         match self.try_take::<Result<(), E>>(key.clone()).transpose() {
             Ok(None) => (),
-            Ok(Some(())) => {
+            Ok(Some(_)) => {
                 // Stream ended
-                self.pending.retain(|(k, _)| k != &key);
-                return Err(StreamError::Ended);
+                self.kill(key);
+                return Ok(None);
             }
             Err(err) => {
                 // Stream errored
@@ -173,8 +179,13 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
             }
         };
 
-        let Ok(item) = item.downcast::<T>() else {
-            panic!("expected: {}", std::any::type_name::<T>())
+        let item = match item.downcast::<T>() {
+            Ok(item) => item,
+            Err(item) => panic!(
+                "downcast failed in stream, expected: {}, found id: {:?}",
+                std::any::type_name::<T>(),
+                item.type_id()
+            ),
         };
 
         tracing::trace!(?key, "stream returned");
@@ -190,7 +201,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
     ) -> Result<Option<T>, StreamError<E>>
     where
         T: Send + Sync + 'static + std::any::Any,
-        F: std::future::Future<Output = Result<std::convert::Infallible, E>> + Send + 'static,
+        F: std::future::Future<Output = Result<(), E>> + Send + 'static,
         K: Clone + 'static,
         E: Send + Sync + 'static,
     {

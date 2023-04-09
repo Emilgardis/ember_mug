@@ -18,7 +18,7 @@ impl EmberMug {
             .map_err(Into::into)
     }
 
-    /// Get a stream of events sent by the mug
+    /// Get a stream of events sent by the mug. You need to use [`subscribe_push_events`](EmberMug::subscribe_push_events) to get events. The stream is valid across connections but you need to
     pub async fn listen_push_events(
         &self,
     ) -> Result<
@@ -26,7 +26,6 @@ impl EmberMug {
         ReadError,
     > {
         use futures::StreamExt;
-        self.subscribe_push_events().await?;
         let stream = self
             .peripheral
             .notifications()
@@ -41,7 +40,8 @@ impl EmberMug {
                     tracing::debug!(%v.uuid, ?v.value, "received unknown event");
                     None
                 }
-            });
+            })
+            .take_until(self.disconnected());
         Ok(stream)
     }
 

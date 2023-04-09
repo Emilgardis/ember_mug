@@ -54,6 +54,7 @@ impl eframe::App for EmberMugApp {
                     let _re = re;
 
                     let mug = ember_mug::EmberMug::find_and_connect().await?;
+                    mug.subscribe_push_events().await?;
 
                     let target_temp = mug.get_target_temperature().await?.to_degree();
                     let current_temp = mug.get_current_temperature().await?.to_degree();
@@ -145,7 +146,8 @@ impl eframe::App for EmberMugApp {
                                 tracing::debug!(?event, "got event");
                                 sender.send(event)?;
                             }
-                            color_eyre::eyre::bail!("stream exited early")
+                            tracing::debug!("stream exited");
+                            Ok(())
                         }
                     },
                 ) {
@@ -159,6 +161,7 @@ impl eframe::App for EmberMugApp {
                     Ok(None) => (),
                     Err(e) => {
                         tracing::error!(error = ?e, "got error");
+                        resolver.kill("listen_push_events");
                         std::mem::take(opt_mug);
                         break 'data;
                     }
