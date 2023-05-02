@@ -29,7 +29,7 @@
 </pre></div><pre class="rust"><code><button class="expand">&varr;</button><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
     <span class="kw">let </span>mug = EmberMug::find_and_connect().<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="kw">let </span>name = mug.get_name().<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="macro">println!</span>(<span class="string">&quot;Connected to an Ember Mug with the name &#39;{}&#39;&quot;</span>, name);
+    <span class="macro">println!</span>(<span class="string">&quot;Connected to an Ember Mug with the name &#39;{name}&#39;&quot;</span>);
 
     <span class="kw">let </span>battery = mug.get_battery().<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="macro">println!</span>(<span class="string">&quot;Battery level: {}%&quot;</span>, battery.battery);
@@ -37,14 +37,14 @@
     <span class="kw">let </span>current_temp = mug.get_current_temperature().<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="kw">let </span>target_temp = mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="kw">let </span>unit = mug.get_temperature_unit().<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="macro">println!</span>(<span class="string">&quot;Current temperature: {}{}&quot;</span>, current_temp, unit);
-    <span class="macro">println!</span>(<span class="string">&quot;Target temperature: {}{}&quot;</span>, target_temp, unit);
+    <span class="macro">println!</span>(<span class="string">&quot;Current temperature: {current_temp}{unit}&quot;</span>);
+    <span class="macro">println!</span>(<span class="string">&quot;Target temperature: {target_temp}{unit}&quot;</span>);
 
     mug.set_target_temperature(<span class="kw-2">&amp;</span><span class="highlight focus">Temperature::from_degree</span>(<span class="number">60.0</span>))
         .<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="kw">let </span>target_temp = mug.get_target_temperature().<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="macro">println!</span>(<span class="string">&quot;Changed target temperature to {}{}&quot;</span>, target_temp, unit);
+    <span class="macro">println!</span>(<span class="string">&quot;Changed target temperature to {target_temp}{unit}&quot;</span>);
 
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div></div></div></div></details></div></details></div><h2 id="trait-implementations" class="small-section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-BinRead-for-Temperature" class="impl"><a class="srclink rightside" href="../../src/ember_mug/mug.rs.html#223">source</a><a href="#impl-BinRead-for-Temperature" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="https://docs.rs/binrw/0.10.0/binrw/binread/trait.BinRead.html" title="trait binrw::binread::BinRead">BinRead</a> for <a class="struct" href="struct.Temperature.html" title="struct ember_mug::mug::Temperature">Temperature</a></h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Args-1" class="associatedtype trait-impl"><a href="#associatedtype.Args-1" class="anchor">§</a><h4 class="code-header">type <a href="https://docs.rs/binrw/0.10.0/binrw/binread/trait.BinRead.html#associatedtype.Args" class="associatedtype">Args</a> = <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a></h4></section></summary><div class='docblock'>The type used for the <code>args</code> parameter of <a href="https://docs.rs/binrw/0.10.0/binrw/binread/trait.BinRead.html#method.read_args" title="associated function binrw::binread::BinRead::read_args::read_args"><code>read_args()</code></a> and
