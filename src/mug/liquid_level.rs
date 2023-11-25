@@ -2,7 +2,7 @@ use super::*;
 impl EmberMug {
     /// Retrieves the level of liquid present in the cup
     pub async fn get_liquid_level(&self) -> Result<LiquidLevel, ReadError> {
-        self.read_deserialize(&crate::KnownCharacteristic::LiquidLevel)
+        self.read_deserialize::<LiquidLevel>(&crate::KnownCharacteristic::LiquidLevel)
             .await
     }
 }

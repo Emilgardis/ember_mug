@@ -159,7 +159,7 @@ impl EmberMug {
         uuid: &KnownCharacteristic,
     ) -> Result<T, ReadError>
     where
-        T::Args: Default,
+        for<'a> T::Args<'a>: Default,
     {
         T::read(&mut Cursor::new(self.read(uuid).await?)).map_err(Into::into)
     }
@@ -184,7 +184,7 @@ impl EmberMug {
     ) -> Result<(), WriteError>
     where
         D: BinWrite + binrw::meta::WriteEndian + Send + Sync,
-        <D as BinWrite>::Args: Default,
+        for<'a> <D as BinWrite>::Args<'a>: Default,
     {
         let mut buf = Cursor::new(vec![]);
         data.write(&mut buf)?;
@@ -203,7 +203,7 @@ impl EmberMug {
     pub async fn command<D>(&self, uuid: &KnownCharacteristic, data: &D) -> Result<(), WriteError>
     where
         D: BinWrite + binrw::meta::WriteEndian + Send + Sync,
-        <D as BinWrite>::Args: Default,
+        for<'a> <D as BinWrite>::Args<'a>: Default,
     {
         self.write(btleplug::api::WriteType::WithoutResponse, uuid, data)
             .await
@@ -213,7 +213,7 @@ impl EmberMug {
     pub async fn request<D>(&self, uuid: &KnownCharacteristic, data: &D) -> Result<(), WriteError>
     where
         D: BinWrite + binrw::meta::WriteEndian + Send + Sync,
-        <D as BinWrite>::Args: Default,
+        for<'a> <D as BinWrite>::Args<'a>: Default,
     {
         self.write(btleplug::api::WriteType::WithResponse, uuid, data)
             .await

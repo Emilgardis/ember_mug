@@ -4,7 +4,7 @@ impl EmberMug {
     ///
     /// Call [`subscribe_push_events`](Self::unsubscribe_push_events) first, and prefer to use [`listen_push_events`](Self::listen_push_events) instead
     pub async fn get_push_event(&self) -> Result<PushEvent, ReadError> {
-        self.read_deserialize(&crate::KnownCharacteristic::PushEvents)
+        self.read_deserialize::<PushEvent>(&crate::KnownCharacteristic::PushEvents)
             .await
     }
     /// Subscribe to events sent by the mug
