@@ -33,10 +33,7 @@ impl EmberMug {
             .await?
             .filter_map(move |v| async move {
                 if crate::KnownCharacteristic::PushEvents.get() == v.uuid {
-                    Some(
-                        self.read_deserialize(&crate::KnownCharacteristic::PushEvents)
-                            .await,
-                    )
+                    Some(PushEvent::read(&mut Cursor::new(v.value)).map_err(ReadError::ReadError))
                 } else {
                     tracing::debug!(%v.uuid, ?v.value, "received unknown event");
                     None
