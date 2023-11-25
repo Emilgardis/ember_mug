@@ -163,7 +163,7 @@ impl<K: std::hash::Hash + Eq + std::fmt::Debug + Clone> Resolver<K> {
         };
 
         let Some(item) = self.streams.get_mut(&key) else {
-            return Ok(None)
+            return Ok(None);
         };
 
         let item = match item() {

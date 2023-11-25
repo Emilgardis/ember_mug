@@ -73,7 +73,7 @@ impl EmberMug {
         // FIXME: pin on stack with `Pin::new_unchecked` or `pin-utils`
         let mut stream = Box::pin(crate::btle::get_mugs().await?);
         let Some((adapter, mug)) = stream.try_next().await? else {
-            return Err(ConnectError::NoDevice)
+            return Err(ConnectError::NoDevice);
         };
         Self::connect_mug(adapter, mug).await
     }
