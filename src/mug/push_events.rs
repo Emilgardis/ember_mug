@@ -4,7 +4,7 @@ impl EmberMug {
     ///
     /// Call [`subscribe_push_events`](Self::unsubscribe_push_events) first, and prefer to use [`listen_push_events`](Self::listen_push_events) instead
     pub async fn get_push_event(&self) -> Result<PushEvent, ReadError> {
-        self.read_deserialize(&crate::KnownCharacteristic::PushEvents)
+        self.read_deserialize::<PushEvent>(&crate::KnownCharacteristic::PushEvents)
             .await
     }
     /// Subscribe to events sent by the mug
@@ -33,10 +33,7 @@ impl EmberMug {
             .await?
             .filter_map(move |v| async move {
                 if crate::KnownCharacteristic::PushEvents.get() == v.uuid {
-                    Some(
-                        self.read_deserialize(&crate::KnownCharacteristic::PushEvents)
-                            .await,
-                    )
+                    Some(PushEvent::read(&mut Cursor::new(v.value)).map_err(ReadError::ReadError))
                 } else {
                     tracing::debug!(%v.uuid, ?v.value, "received unknown event");
                     None

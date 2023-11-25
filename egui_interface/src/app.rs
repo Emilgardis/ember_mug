@@ -192,6 +192,30 @@ impl eframe::App for EmberMugApp {
             let a = std::mem::take(opt_mug);
             crate::runtime::spawn(async move { a });
         }
+
+        if let Some(false) = opt_mug
+            .as_ref()
+            .and_then(|mug| {
+                let mug = mug.mug.clone();
+                let ctx = ctx.clone();
+
+                resolver.try_take_with::<Result<_, ember_mug::btleplug::Error>, _>(
+                    "check_alive_connected",
+                    async move {
+                        let _repaint = ctx.clone();
+                        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+                        mug.is_connected().await
+                    },
+                )
+            })
+            .transpose()
+            .unwrap()
+        {
+            tracing::info!("mug disconnected!");
+            let a = std::mem::take(opt_mug);
+            ctx.request_repaint();
+            crate::runtime::spawn(async move { a });
+        }
         egui::CentralPanel::default().show(ctx, |ui| {
             if let Some(mug) = opt_mug {
                 let data = &mut mug.data;

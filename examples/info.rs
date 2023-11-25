@@ -17,9 +17,9 @@ async fn run() -> Result<(), color_eyre::Report> {
         let known = ember_mug::KnownCharacteristic::all();
         for k in known {
             let Some(char) = chars.iter().position(|&c| c.uuid == k.get()) else {
-            println!("couldn't find {k:?}");
-            continue;
-        };
+                println!("couldn't find {k:?}");
+                continue;
+            };
             let char = chars.remove(char);
             println!("known: {k:?}\n{} cap: {:?}", char.uuid, char.properties);
         }

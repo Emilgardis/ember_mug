@@ -35,7 +35,7 @@ impl EmberMug {
             ));
         }
 
-        self.command(
+        self.command::<Name>(
             &crate::KnownCharacteristic::Name,
             &Name {
                 name: name.as_bytes(),
