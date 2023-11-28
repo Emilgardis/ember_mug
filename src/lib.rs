@@ -193,11 +193,26 @@ pub enum SearchError {
 #[derive(Debug, thiserror::Error)]
 pub enum ReadError {
     /// Characteristic is missing / not present on device
-    #[error("characteristic is missing")]
-    NoSuchCharacteristic,
+    #[error("characteristic `{}` ({:?}) is missing", .0.get(), .0)]
+    NoSuchCharacteristic(KnownCharacteristic),
     /// Read from BLE failed
-    #[error("btle operation failed")]
-    BtleError(#[from] btleplug::Error),
+    #[error("btle read operation on `{}`{} failed", .1, .2.map(|c| format!(" ({:?})", c)).unwrap_or_default())]
+    ReadOperation(
+        #[source] btleplug::Error,
+        uuid::Uuid,
+        Option<KnownCharacteristic>,
+    ),
+    /// Subscription or unsubscription failed
+    #[error("btle {} operation on `{}`{} failed", if *.3 {"subscribe"} else {"unsubscribe"}, .1, .2.map(|c| format!(" ({:?})", c)).unwrap_or_default())]
+    SubscribeOperation(
+        #[source] btleplug::Error,
+        uuid::Uuid,
+        Option<KnownCharacteristic>,
+        bool,
+    ),
+    /// BLE command failed
+    #[error("btle failed")]
+    BtleError(#[source] btleplug::Error),
     /// Reading of data failed
     #[error("read failed")]
     ReadError(#[from] binrw::Error),
@@ -210,11 +225,15 @@ pub enum ReadError {
 #[derive(Debug, thiserror::Error)]
 pub enum WriteError {
     /// Characteristic is missing / not present on device
-    #[error("characteristic is missing")]
-    NoSuchCharacteristic,
+    #[error("characteristic `{}` ({:?}) is missing", .0.get(), .0)]
+    NoSuchCharacteristic(KnownCharacteristic),
     /// Write with BLE failed
-    #[error("btle operation failed")]
-    BtleError(#[from] btleplug::Error),
+    #[error("btle write operation on `{}`{} failed", .1, .2.map(|c| format!(" ({:?})", c)).unwrap_or_default())]
+    WriteOperation(
+        #[source] btleplug::Error,
+        uuid::Uuid,
+        Option<KnownCharacteristic>,
+    ),
     /// Interpreting source data into bytes failed
     #[error("write failed")]
     WriteError(#[from] binrw::Error),
