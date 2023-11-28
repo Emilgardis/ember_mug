@@ -4,7 +4,11 @@
 
 ## [Unreleased] - ReleaseDate
 
-[Commits](https://github.com/emilgardis/ember_mug/compare/v0.3.0...Unreleased)
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.4.0...Unreleased)
+
+## [v0.4.0] - 2023-11-28
+
+[Commits](https://github.com/emilgardis/ember_mug/compare/v0.3.0...v0.4.0)
 
 - Properly read push events
 - Make errors for reading and writing more descriptive when it's the underlying bluetooth stack that is failing
