@@ -6,6 +6,10 @@
 
 [Commits](https://github.com/emilgardis/ember_mug/compare/v0.3.0...Unreleased)
 
+- Properly read push events
+- Make errors for reading and writing more descriptive when it's the underlying bluetooth stack that is failing
+  - Replaced `WriteError::BtleError` with `WriteError::WriteOperation`, added `ReadError::ReadOperation` and `ReadError::SubscribeOperation`
+
 ## [v0.3.0] - 2023-01-23
 
 [Commits](https://github.com/emilgardis/ember_mug/compare/v0.2.0...v0.3.0)

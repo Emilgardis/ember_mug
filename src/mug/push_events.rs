@@ -9,13 +9,22 @@ impl EmberMug {
     }
     /// Subscribe to events sent by the mug
     pub async fn subscribe_push_events(&self) -> Result<(), ReadError> {
+        let characteristic = self
+            .get_characteristic(&crate::KnownCharacteristic::PushEvents.get())
+            .ok_or(ReadError::NoSuchCharacteristic(
+                crate::KnownCharacteristic::PushEvents,
+            ))?;
         self.peripheral
-            .subscribe(
-                self.get_characteristic(&crate::KnownCharacteristic::PushEvents.get())
-                    .ok_or(ReadError::NoSuchCharacteristic)?,
-            )
+            .subscribe(characteristic)
             .await
-            .map_err(Into::into)
+            .map_err(|e| {
+                ReadError::SubscribeOperation(
+                    e,
+                    characteristic.uuid,
+                    Some(crate::KnownCharacteristic::PushEvents),
+                    true,
+                )
+            })
     }
 
     /// Get a stream of events sent by the mug. You need to use [`subscribe_push_events`](EmberMug::subscribe_push_events) to get events.
@@ -30,7 +39,8 @@ impl EmberMug {
         let stream = self
             .peripheral
             .notifications()
-            .await?
+            .await
+            .map_err(ReadError::BtleError)?
             .filter_map(move |v| async move {
                 if crate::KnownCharacteristic::PushEvents.get() == v.uuid {
                     Some(PushEvent::read(&mut Cursor::new(v.value)).map_err(ReadError::ReadError))
@@ -45,13 +55,22 @@ impl EmberMug {
 
     /// Unsubscribe to events sent by the mug
     pub async fn unsubscribe_push_events(&self) -> Result<(), ReadError> {
+        let characteristic = self
+            .get_characteristic(&crate::KnownCharacteristic::PushEvents.get())
+            .ok_or(ReadError::NoSuchCharacteristic(
+                crate::KnownCharacteristic::PushEvents,
+            ))?;
         self.peripheral
-            .unsubscribe(
-                self.get_characteristic(&crate::KnownCharacteristic::PushEvents.get())
-                    .ok_or(ReadError::NoSuchCharacteristic)?,
-            )
+            .unsubscribe(characteristic)
             .await
-            .map_err(Into::into)
+            .map_err(|e| {
+                ReadError::SubscribeOperation(
+                    e,
+                    characteristic.uuid,
+                    Some(crate::KnownCharacteristic::PushEvents),
+                    false,
+                )
+            })
     }
 }
 

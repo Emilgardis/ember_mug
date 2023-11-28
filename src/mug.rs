@@ -166,13 +166,13 @@ impl EmberMug {
 
     /// Deserialize data on given characteristic with `uuid`
     pub async fn read(&self, uuid: &KnownCharacteristic) -> Result<Vec<u8>, ReadError> {
+        let characteristic = self
+            .get_characteristic(&uuid.get())
+            .ok_or_else(|| ReadError::NoSuchCharacteristic(*uuid))?;
         self.peripheral
-            .read(
-                self.get_characteristic(&uuid.get())
-                    .ok_or(ReadError::NoSuchCharacteristic)?,
-            )
+            .read(characteristic)
             .await
-            .map_err(Into::into)
+            .map_err(|e| ReadError::ReadOperation(e, characteristic.uuid, Some(*uuid)))
     }
 
     /// Write data to given characteristic on `uuid`
@@ -188,15 +188,13 @@ impl EmberMug {
     {
         let mut buf = Cursor::new(vec![]);
         data.write(&mut buf)?;
+        let characteristic = self
+            .get_characteristic(&uuid.get())
+            .ok_or_else(|| WriteError::NoSuchCharacteristic(*uuid))?;
         self.peripheral
-            .write(
-                self.get_characteristic(&uuid.get())
-                    .ok_or(WriteError::NoSuchCharacteristic)?,
-                buf.get_ref(),
-                write,
-            )
+            .write(characteristic, buf.get_ref(), write)
             .await
-            .map_err(Into::into)
+            .map_err(|e| WriteError::WriteOperation(e, characteristic.uuid, Some(*uuid)))
     }
 
     /// Send command to given characteristic on `uuid`
