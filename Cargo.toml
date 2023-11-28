@@ -10,7 +10,7 @@ exclude = [".github", "docs", "release.toml"]
 description = "Control and retrieve data from an Ember Ceramic Mug using Bluetooth Low Energy (BLE)"
 
 [dependencies]
-binrw = "0.13.1"
+binrw = "0.13.2"
 btleplug = "0.11.3"
 futures = "0.3.25"
 serde = { version = "1.0.152", optional = true, features = ["derive"] }
