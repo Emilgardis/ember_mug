@@ -28,6 +28,7 @@ impl EmberMug {
     }
 
     /// Get a stream of events sent by the mug. You need to use [`subscribe_push_events`](EmberMug::subscribe_push_events) to get events.
+    ///
     /// The stream is not valid across connections.
     pub async fn listen_push_events(
         &self,
